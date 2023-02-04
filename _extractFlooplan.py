@@ -5,9 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from datetime import datetime
 import time
-import pytesseract
-#import easyocr
-import keras_ocr
+import fitz
 
 
 BOX_LIMITER = 4
@@ -15,9 +13,12 @@ BOX_MIN_NUMBER = 2
 BOX_MAX_NUMBER = 8
 # tuplify
 
-# reader = easyocr.Reader(['ch_sim','en']) # need to run only once to load model into memory
+# import pytesseract
+# import easyocr
+# import keras_ocr
+# # reader = easyocr.Reader(['ch_sim','en']) # need to run only once to load model into memory
 # ocr_reader = easyocr.Reader(['en'])
-ocr_pipeline = keras_ocr.pipeline.Pipeline()
+# ocr_pipeline = keras_ocr.pipeline.Pipeline()
 
 
 def tup(point):
@@ -54,22 +55,18 @@ def getAllOverlaps(boxes, bounds, index):
     return overlaps
 
 
-# filename1 = '/Users/fred/Documents/RealMaster/floorplan/Burano_image_1_1.jpeg'
-filename1 = '/Users/fred/work/floorplan/images/IMG_6892.JPG'
+def medianCanny(img, thresh1, thresh2):
+    median = np.median(img)
+    img = cv2.Canny(img, int(thresh1 * median), int(thresh2 * median))
+    return img
 
 
-def getImageAndBoxes(filename):
-    img = cv2.imread(filename)
+def getImageAndBoxes(img):
     imgHeight = img.shape[0]
     imgWidth = img.shape[1]
     imgChannels = img.shape[2]
     orig = np.copy(img)
     blue, green, red = cv2.split(img)
-
-    def medianCanny(img, thresh1, thresh2):
-        median = np.median(img)
-        img = cv2.Canny(img, int(thresh1 * median), int(thresh2 * median))
-        return img
 
     blue_edges = medianCanny(blue, 0, 1)
     green_edges = medianCanny(green, 0, 1)
@@ -92,7 +89,7 @@ def getImageAndBoxes(filename):
         currentHierarchy = component[1]
         x, y, w, h = cv2.boundingRect(currentContour)
         if currentHierarchy[3] < 0:
-            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 1)
+            cv2.rectangle(orig, (x, y), (x+w, y+h), (0, 255, 0), 1)
             allBoxes.append([[x, y], [x+w, y+h], [w, h]])
             # filter out excessively large boxes, and boxes with extreme aspect ratios
             if w*h > max_area:
@@ -220,6 +217,8 @@ def getImageAndBoxes(filename):
     # cv2.waitKey(0);
     extendedBoxes = []
     padding = 5
+    widthTotal = 0
+    heightTotal = 0
     for box in boxes:
         tl = box[0][:]
         br = box[1][:]
@@ -234,8 +233,10 @@ def getImageAndBoxes(filename):
         br[1] = min(imgHeight - 1, br[1])
         wh[0] = br[0] - tl[0]
         wh[1] = br[1] - tl[1]
+        widthTotal += wh[0]
+        heightTotal += wh[1]
         extendedBoxes.append([tl, br, wh])
-    return orig, extendedBoxes
+    return extendedBoxes, widthTotal, heightTotal
 
 
 def removeFile(filename):
@@ -266,28 +267,95 @@ def saveSubImages(img, boxes, foldername, prefix):
             cv2.imwrite(pathname, sub)
         except:
             print(f'error writing {pathname} {sub.shape} {box}')
-        text1 = pytesseract.image_to_string(sub)
+        # text1 = pytesseract.image_to_string(sub)
         # text2s = ocr_reader.readtext(sub)
-        prediction_groups = ocr_pipeline.recognize([sub], cls=True)
-        print(f'{i} {text1} {prediction_groups}')
-        texts.append([text1, prediction_groups])
+        # prediction_groups = ocr_pipeline.recognize([sub], cls=True)
+        text1 = 'text'
+        text2s = ''
+        prediction_groups = ''
+        print(f'{i} {text1} {text2s} {prediction_groups}')
+        texts.append([text1, text2s, prediction_groups])
     saveBoxes(os.path.join(foldername, f'{prefix}_boxes.txt'), boxes, texts)
 
+
+def rotate(img, theta):
+    rows, cols = img.shape[0], img.shape[1]
+    image_center = (cols/2, rows/2)
+
+    M = cv2.getRotationMatrix2D(image_center, theta, 1)
+
+    abs_cos = abs(M[0, 0])
+    abs_sin = abs(M[0, 1])
+
+    bound_w = int(rows * abs_sin + cols * abs_cos)
+    bound_h = int(rows * abs_cos + cols * abs_sin)
+
+    M[0, 2] += bound_w/2 - image_center[0]
+    M[1, 2] += bound_h/2 - image_center[1]
+
+    # rotate orignal image to show transformation
+    rotated = cv2.warpAffine(img, M, (bound_w, bound_h),
+                             borderValue=(255, 255, 255))
+    return rotated
+
+
+def processImage(fullpath, file, targetFolder):
+    print(fullpath)
+    img = cv2.imread(fullpath)
+    boxes, w, h = getImageAndBoxes(img)
+    if h > w:
+        print(f'rotate {file} 270')
+        img = rotate(img, 270)
+        boxes, w, h = getImageAndBoxes(img)
+        removeFile(fullpath)
+        cv2.imwrite(fullpath,img)
+    # extract the filename without extension
+    prefix = os.path.splitext(file)[0]
+    # save boxes
+    saveSubImages(img, boxes, targetFolder, prefix)
+
+
 # walk through folder
-
-
 def walkFolder(foldername, targetFolder):
     for root, dirs, files in os.walk(foldername):
         for file in files:
             if file.endswith(".JPG") or file.endswith(".jpg") or file.endswith(".jpeg") or file.endswith(".JPEG"):
-                filename = os.path.join(root, file)
-                print(filename)
-                orig, boxes = getImageAndBoxes(filename)
-                # extract the filename without extension
-                prefix = os.path.splitext(file)[0]
-                # save boxes
-                saveSubImages(orig, boxes, targetFolder, prefix)
+                fullpath = os.path.join(root, file)
+                processImage(fullpath, file, targetFolder)
 
 
-foldername = '/Users/fred/work/floorplan/images'
-walkFolder(foldername, '/Users/fred/work/floorplan/target')
+def pdf2images(pdf_file):
+    imageFiles = []
+
+    # open the file
+    pdf_doc = fitz.open(pdf_file)
+
+    # STEP 3
+    # iterate over PDF pages
+    for page_index in range(len(pdf_doc)):
+
+        filepath = f'/Users/fred/work/floorplan/images/pdf_{page_index}.jpg'
+
+        # get the page itself
+        page = pdf_doc[page_index]
+        # image_list = page.getImageList()
+
+        pix = page.get_pixmap(matrix=fitz.Identity, dpi=500,
+                              colorspace=fitz.csRGB, clip=None, alpha=True, annots=True)
+        removeFile(filepath)
+        pix.save(filepath)  # save file
+
+        imageFiles.append(filepath)
+    return imageFiles
+
+
+if __name__ == "__main__":
+    pdfFile = r'/Users/fred/work/floorplan/Toronto/1 _ 3 Market St - Market Wharf/Market-Wharf-floorplans.compressed.pdf'
+    images = pdf2images(pdfFile)
+    for i in range(len(images)):
+        processImage(images[i], f'pdf_{i}.jpg',
+                     '/Users/fred/work/floorplan/target')
+    print('done')
+
+    # foldername = '/Users/fred/work/floorplan/images'
+    # walkFolder(foldername, '/Users/fred/work/floorplan/target')
