@@ -99,3 +99,5 @@ pip install opencv-python
 pip install easyocr
 pip install pdf2image
 pip install imagehash
+pip install PyMuPDF
+pip install fitz
