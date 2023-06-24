@@ -13,15 +13,18 @@ import time
 import fitz
 import platform
 import pytesseract
-pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'
+
+
 
 if platform.system() == 'Windows':
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     import easyocr
-    import keras_ocr
-    ocr_easy = easyocr.Reader(['en'])  # (['ch_sim','en'])
-    ocr_keras = keras_ocr.pipeline.Pipeline()
+    # import keras_ocr
+    ocr_easy = easyocr.Reader(['en']) #,gpu = False)  # (['ch_sim','en'])
+    # ocr_keras = keras_ocr.pipeline.Pipeline()
     TRY_OCR = True
 else:
+    pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'
     TRY_OCR = False
 
 BOX_MIN_NUMBER = 2
@@ -86,8 +89,11 @@ def camelCase(s):
 def saveInfo(filename, data):
     removeFile(filename)
     with open(filename, 'w') as outfile:
-        json.dump(data, outfile, indent=4, sort_keys=True)
-
+        try:
+            json.dump(data, outfile, indent=4, sort_keys=True)
+        except Exception:
+            print(f'error {filename}')
+            print(data)
 
 def loadInfo(filename, default=None):
     if not os.path.exists(filename):
@@ -221,7 +227,7 @@ def getImageAndBoxes(img):
         for point in points:
             point = point[0]
             cv2.circle(copy, tup(point), 4, (255, 0, 0), -1)
-        cv2.imshow(f"Copy {merge_margin}", copy)
+        # cv2.imshow(f"Copy {merge_margin}", copy)
         # key = cv2.waitKey(1);
         # if key == ord('q'):
         #     break;
@@ -292,7 +298,7 @@ def getImageAndBoxes(img):
             # print(f'new mergin: {merge_margin}')
 
     # draw final boxes
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
 
     # show final
     copy = np.copy(orig)
@@ -306,7 +312,7 @@ def getImageAndBoxes(img):
     # plt.title(f'Binary contours {datetime.now()}')
     # plt.show()
 
-    cv2.imshow("Final", copy)
+    # cv2.imshow("Final", copy)
     # cv2.waitKey(0);
     extendedBoxes = []
     padding = 5
@@ -444,18 +450,18 @@ def processSubImages(img, folders, baseInfo, projectInfo, imgInfo):
                                    for easyTxtItem in easyTxtList)
             else:
                 easyTxt = ''
-            contour['text']['er'] = {'text': easyTxt, 'orig': easyTxtList}
-            kerasTxtList = ocr_keras.recognize([sub])
-            if len(kerasTxtList[0]) > 0:
-                kerasTxt = ' '.join(kerasTxtItem[0]
-                                    for kerasTxtItem in kerasTxtList[0])
-            else:
-                kerasTxt = ''
-            contour['text']['kr'] = {'text': kerasTxt, 'orig': kerasTxtList}
+            contour['text']['er'] = {'text': easyTxt} #, 'orig': easyTxtList}
+            #kerasTxtList = ocr_keras.recognize([sub])
+            #if len(kerasTxtList[0]) > 0:
+            #    kerasTxt = ' '.join(kerasTxtItem[0]
+            #                        for kerasTxtItem in kerasTxtList[0])
+            #else:
+            #    kerasTxt = ''
+            #contour['text']['kr'] = {'text': kerasTxt} #, 'orig': kerasTxtList}
         else:
             easyTxt = ''
-            kerasTxt = ''
-        print(f'{i}: te:{tesseractTxt}\n er:{easyTxt}\n kr:{kerasTxt}\n')
+            #kerasTxt = ''
+        print(f'{i}: te:{tesseractTxt}\n er:{easyTxt}')
         if i == 0:  # floorplan
             # save the floorplan to inter
             replaceImageFile(os.path.join(
@@ -580,9 +586,15 @@ if __name__ == "__main__":
     else:
         # file = r'/Users/fred/work/floorplan/Toronto/1 _ 3 Market St - Market Wharf/Market-Wharf-floorplans.compressed.pdf'
         file = r'/Users/fred/work/floorplan/Toronto/135 & 155 Dalhousie St - The Merchandise Building Original Lofts/Merchandise-Lofts-FloorPlan.pdf'
+        if platform.system() == 'Windows':
+            file = r'C:\Users\qfxia\work\floorplan\Toronto\135 & 155 Dalhousie St - The Merchandise Building Original Lofts\Merchandise-Lofts-FloorPlan.pdf'
     middleDir = r'/Users/fred/work/floorplan/middle'
     internalDir = r'/Users/fred/work/floorplan/internal'
     publicDir = r'/Users/fred/work/floorplan/public'
+    if platform.system() == 'Windows':
+        middleDir = r'C:\Users\qfxia\work\floorplan\middle'
+        internalDir = r'C:\Users\qfxia\work\floorplan\internal'
+        publicDir = r'C:\Users\qfxia\work\floorplan\public'
     dirs = {
         "middle": middleDir,
         "inter": internalDir,
