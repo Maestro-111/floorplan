@@ -1,3 +1,4 @@
+# TODO: add description of this file
 import imagehash
 from PIL import Image
 

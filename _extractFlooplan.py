@@ -1,3 +1,4 @@
+# TODO: add description of this file
 import os
 import cv2
 import numpy as np

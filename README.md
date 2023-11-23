@@ -1,6 +1,14 @@
-# floorplan
+# Seneca Floorplan Project
 
-## Floorplan processing
+
+---
+- Phase 1 progress 1%
+- Phase 2 progress 0
+- Phase 3 progress 20%
+- Phase 4 progress 0
+- Phase 5 progress 0
+
+## Floorplan processing (phase 3)
 
 - extract address and project name to DB and/or folders
 - read source folder:
@@ -91,8 +99,11 @@
    1. Project subfolder name: encoded(id). To hold each building in separate sub-folders. Floorplan/keyplate/drawing/remark-info as different files in that folder.
       1. each floorplan, keyplate, direction arrow as a separate file
 
-# setup
+### Database structure (mongo)
+TODO
 
+# setup enviroment
+```
 pip install keras-ocr
 pip install pytesseract
 pip install opencv-python
@@ -101,3 +112,4 @@ pip install pdf2image
 pip install imagehash
 pip install PyMuPDF
 pip install fitz
+```
