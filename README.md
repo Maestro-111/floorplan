@@ -12,7 +12,7 @@
   - floorplan: biggest image. Feed for future ML
   - keyplate: may have multiple. Feed for future ML
   - unit name
-  - soft (+balcany sqft)
+  - sqft (+balcany sqft)
   - floors
   - remarks
   - disclaimers
