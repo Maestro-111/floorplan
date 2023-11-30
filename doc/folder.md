@@ -2,31 +2,33 @@ Folder structure as follow:
 
 ```
 .
-├── README.md # main read me file
-├── Seneca_Phase1 # DEPRECATED. use branch/release
+├── README.md                <-- main read me file
+├── Seneca_Phase1    <-- DEPRECATED. use branch/release
 │   ├── Contour_heuristic.py
 │   ├── extraction_from_floorplan.ipynb
 │   ├── extraction_from_floorplan.py
 │   ├── north_indicator_extraction_colab.ipynb
 │   └── sobel_edge_detection.py
-├── _reference # reference file for certain operations
+├── _reference               <-- reference file for certain operations
 │   ├── _extractFlooplan.py
 │   ├── correctOrientation.py
 │   └── processFloorplan.py
-├── build # generated file, no need to upload, will be ignored
+├── build            <-- generated file, no need to upload, will be ignored
 │   ├── floorplan
 │   ├── model
 │   └── survey
-├── lib # 3rd party library folder
-├── data # original pictures
+├── lib              <-- 3rd party library folder
+├── reports                  <-- report folder
+├── config                    <-- config folder for static value
+├── data                     <-- original/raw pictures/data
 │   ├── floorplan
 │   └── survey
 ├── doc
-│   ├── coding.md  # coding conventions
-│   └── folder.md  # folder structure
-├── model # final result of models
-└── src src # src folder for code
-    └── helpers # helpers function folder
+│   ├── coding.md            <-- coding conventions
+│   └── folder.md            <-- folder structure
+├── model                    <-- final result of models
+└── src                      <-- src folder for code(add/edit at your pref)
+    ├── helpers              <-- helpers function folder
     └── main.py # entry file
 
 ```
