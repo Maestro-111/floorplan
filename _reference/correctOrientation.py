@@ -1,3 +1,5 @@
+# DEPRECATED: this file is used as a reference for the new version
+
 # Document image orientation correction
 # This approach is based on text orientation
 

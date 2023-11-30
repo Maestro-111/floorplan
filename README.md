@@ -2,7 +2,7 @@
 
 
 ---
-- Phase 1 progress 1%
+- Phase 1 progress 95%
 - Phase 2 progress 0
 - Phase 3 progress 20%
 - Phase 4 progress 0

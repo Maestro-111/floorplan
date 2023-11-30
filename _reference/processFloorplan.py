@@ -1,4 +1,5 @@
 # TODO: add description of this file
+# DEPRECATED, use as reference only
 import imagehash
 from PIL import Image
 
