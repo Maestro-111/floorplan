@@ -9,7 +9,8 @@ this repo is for RM floor project.
 - Phase 5 progress 0
 
 # Contribute
-
+* install poetry, see https://python-poetry.org/docs/
+* install dependencies by ```poetry install```
 
 ## Floorplan processing (phase 3)
 
@@ -35,6 +36,7 @@ TODO:
 
 # setup enviroment
 ```
+poetry install
 pip install keras-ocr
 pip install pytesseract
 pip install opencv-python
