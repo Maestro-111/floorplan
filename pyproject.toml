@@ -6,8 +6,12 @@ authors = ["Rain Liu <laoliuxt@hotmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.9, <3.11"
 pytesseract = "^0.3.10"
+numpy = "^1.26.2"
+tensorflow-macos = {version = "2.9", platform = "darwin"}
+tensorflow-metal = {version = "0.5", platform = "darwin"}
+tensorflow = {version = "2.9", platform = "linux"}
 
 
 [build-system]

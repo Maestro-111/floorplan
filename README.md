@@ -35,6 +35,10 @@ this repo is for RM floor project.
 TODO:
 
 # setup enviroment
+* tensorflow: https://www.tensorflow.org/install/pip?hl=zh-cn
+* poetry: https://python-poetry.org/
+* pyenv: https://github.com/pyenv/pyenv
+
 ```
 poetry install
 pip install keras-ocr
@@ -46,6 +50,9 @@ pip install imagehash
 pip install PyMuPDF
 pip install fitz
 ```
+# extra step for macOs env
+tensorflow see: https://developer.apple.com/metal/tensorflow-plugin/
+pytorch: https://developer.apple.com/metal/pytorch/
 
 # Copyright/License/Disclamer
 apache-2.0 license.

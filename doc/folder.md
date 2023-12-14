@@ -19,8 +19,10 @@ Folder structure as follow:
 │   └── survey
 ├── lib              <-- 3rd party library folder
 ├── reports                  <-- report folder
+├── notebooks                <-- notes folder
+├── logs                     <-- logs folder
 ├── config                    <-- config folder for static value
-├── data                     <-- original/raw pictures/data
+├── data                     <-- original/raw pictures/data(pointer to real folder)
 │   ├── floorplan
 │   └── survey
 ├── doc
