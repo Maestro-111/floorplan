@@ -6,6 +6,6 @@
 *.csv
 result*
 weights*
-test*
+test
 tets_boxes_from_craft*
 contours
