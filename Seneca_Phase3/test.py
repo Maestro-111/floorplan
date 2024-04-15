@@ -224,7 +224,7 @@ if __name__ == '__main__':
             shutil.copy(os.path.join(img_dir, file), copy_dir)
 
 
-        run('tets_boxes_from_craft',tes_mode=args.tesseract_mode)
+        run('tets_boxes_from_craft')
 
 
 

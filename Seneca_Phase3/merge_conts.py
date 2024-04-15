@@ -245,7 +245,7 @@ def process_text_from_tesseract(text_data):
 
 
 
-def run(info_dir,tes_mode:str=4):
+def run(info_dir):
 
     txts_path = []
     images_path = []
