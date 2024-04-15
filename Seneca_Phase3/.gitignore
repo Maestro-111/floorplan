@@ -2,10 +2,12 @@
 *.swp
 *.pkl
 *.pth
-*.xlsx
 *.csv
 result*
 weights*
 test
 tets_boxes_from_craft*
 contours
+area_errors.xlsx
+craft_ocr_output.xlsx
+room_errors.xlsx

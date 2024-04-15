@@ -10,23 +10,13 @@ from math import factorial
 
 import random
 
-from sklearn.metrics import silhouette_score
-from sklearn.cluster import DBSCAN
-from sklearn.cluster import AffinityPropagation
-from sklearn.cluster import BisectingKMeans
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.cluster import KMeans
-
-import tensorflow as tf
-from tensorflow import keras
-from keras.applications.vgg16 import preprocess_input
-from keras.applications.vgg16 import decode_predictions
-
 import openai
 from openai import OpenAI
 
 import re
+import easyocr
+
+PROB = 0.15
 
 
 def is_contour_inside(contour1, contour2,eps=10): # check if contour1 in contour2; eps - allow small deviation
@@ -102,7 +92,7 @@ def merge_close_contours(contours, threshold):
     return merged_contours
 
 
-def get_boxes(merged,copy,img,lst,global_mark:int,model_path:str):
+def get_boxes(merged,copy,img,lst,global_mark:int):
 
     count = 0
 
@@ -129,8 +119,8 @@ def get_boxes(merged,copy,img,lst,global_mark:int,model_path:str):
         except cv2.error:
             lst.append(roi_c)
 
-    plt.imshow(copy)
-    plt.show()
+    #plt.imshow(copy)
+    #plt.show()
 
 
     for file in os.listdir('contours'):
@@ -218,13 +208,15 @@ def visualize_cnts(copy,merged_rectangles):
     plt.show()
 
 
-def merge_existing_boxes(path,points,mark,model_path):
+def merge_existing_boxes(path,points,mark):
     img = cv2.imread(path)
 
     copy = img.copy()
 
+
     merged_rectangles = merge_intersecting_rectangles(points, 7) # lst of points, 7 iters
     merged_rectangles = convert_to_cnt(merged_rectangles) # convert to cv2 cnts
+
 
 
     merged_rectangles = merge_close_contours(merged_rectangles,30) # merge 2 times with proximuty = 30 and 10
@@ -236,22 +228,9 @@ def merge_existing_boxes(path,points,mark,model_path):
 
     # convert to points again, merge overlaping and convert to cnts afterwards
 
-    new_points = []
-
-    for cnt in merged_rectangles:
-        x1, y1, w, h = cv2.boundingRect(cnt)
-        x2,y2 = x1+w,y1
-        x3,y3 = x1+w,y1+h
-        x4,y4 = x1,y1+h
-        new_points.append([x1, y1, x2, y2, x3, y3, x4, y4])
-
-    merged_rectangles = merge_intersecting_rectangles(new_points, 1) # lst of points
-    merged_rectangles = convert_to_cnt(merged_rectangles) # convert to cnts
-    merged_rectangles = remove_contours_inside(merged_rectangles)
-
     ROI = []
 
-    get_boxes(merged_rectangles, copy, img, ROI,mark,model_path)
+    get_boxes(merged_rectangles, copy, img, ROI,mark)
 
     return ROI
 
@@ -271,11 +250,6 @@ def run(info_dir,tes_mode:str=4):
     txts_path = []
     images_path = []
 
-    client = OpenAI(
-        # This is the default and can be omitted
-        api_key=os.environ.get("OPENAI_API_KEY"),
-    )
-
     for folder in os.listdir(info_dir):
         path = os.path.join(info_dir,folder)
         for content in os.listdir(path):
@@ -288,56 +262,50 @@ def run(info_dir,tes_mode:str=4):
 
     mark = 1
 
+    data_names = []
+    data_inners = []
+    data_outers = []
+    ocr_resp = []
+
     for txt_path,image_path in img_txt:
         points = read_coords(txt_path)
 
-        model_path = 'C:/CNN_on_metadata/model.h5' # make as arg?
-
-        ROI = merge_existing_boxes(image_path,points,mark,model_path)
+        ROI = merge_existing_boxes(image_path,points,mark)
 
         pattern_sq = r'[sS][qQ]'
         pattern_ft = r'[fF][tT]'
 
         area_cand = []
+        all_sent = []
 
-        for roi in ROI:
-            text = pytesseract.image_to_string(roi, config=f'--psm {tes_mode}')
+        reader = easyocr.Reader(['en'])
 
-            if text:
-                text = process_text_from_tesseract(text)
+        for roi in ROI: # for eeach box
 
-                if re.findall(pattern_sq,text) or re.findall(pattern_ft,text):
-                    area_cand.append(text)
+            result = reader.readtext(roi)
 
-        a = f"Given these {len(area_cand)} strings derived from the floor plan image (each is separated by ;): "
+            sentence = []
 
-        strings = ""
+            for (bbox, text_out, prob) in result: # check its text
 
-        for cand in area_cand:
-            strings += (' ' + cand + '; ')
+                #print(f" text : {text_out}, prob {prob}")
 
-        d = f"determine which string describes the total area (e.g which string contains total area of the floor plan) and in that string get that total area number." \
-            f"Give your response in this format: total area : found area."
+                if prob > PROB:
+                    sentence.append(text_out)
+
+            sentence = ' '.join(sentence)
+            all_sent.append(sentence)
+
+        strings = " ; ".join(area_cand)
+        all_sent = ' ; '.join(all_sent)
+
+        data_names.append(image_path.split('\\')[-1][:-4])
+        ocr_resp.append(all_sent)
 
 
-        res = a + strings + d
-
-        print(strings)
-
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": res,
-                }
-            ],
-            model="gpt-3.5-turbo",
-        )
-
-        print(chat_completion.choices[0].message.content)
-
-        print("-"*30)
-        mark += 1
+    matrix = np.array([data_names,ocr_resp])
+    df = pd.DataFrame(matrix.transpose(),columns=['Name', 'Response'])
+    df.to_excel("unit_testing\craft_ocr_output.xlsx")
 
 
 
