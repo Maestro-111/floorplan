@@ -90,7 +90,6 @@ parser.add_argument('--test_folder', default='/data/', type=str, help='folder pa
 parser.add_argument('--refine', default=False, action='store_true', help='enable link refiner')
 parser.add_argument('--refiner_model', default='weights/craft_refiner_CTW1500.pth', type=str, help='pretrained refiner model')
 parser.add_argument('--custom_prep', default=False, help='do custom prep')
-parser.add_argument('--tesseract_mode', default=6, type=int, help='mode for tessedact')
 
 args = parser.parse_args()
 
