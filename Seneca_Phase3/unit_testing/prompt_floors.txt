@@ -6,8 +6,8 @@ Note that the floor value might be either a word like 'ground floor' either an i
 For  example, if OCR response contains 'floors 1-3' and 'floors 4-5' you response should be 1-5. In case floor value is a word like 'ground floor' the reponse should be ground floor.
 Finally, if floor value i single number, like '1', the response should be 1.
 
-So, format the output in the following way with respect to 3 cases listed above:
+So, format the output STRICTLY in the following way with respect to 3 cases listed above:
 
-1) if floor is interval then format the reponse in this way: floors: found min-max, if no found value for floor say 0-0.
-2) if floor is a word then format the reponse in this way: floors: found word, if no found value for floor say 0-0.
-3) if floor is single number then format the reponse in this way: floors: found number,if no found value for floor say 0-0.
+1) if floor is interval then - floors: found min-max, if no found value for floor say 0-0.
+2) if floor is a word then  - floors: found word, if no found value for floor say 0-0.
+3) if floor is single number then - floors: found number,if no found value for floor say 0-0.

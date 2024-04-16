@@ -195,7 +195,6 @@ for row in joined_dfs.iterrows():
 
     data_floor_promps.append(res)
 
-    print(floors_gpt_output)
 
 
 
@@ -212,6 +211,12 @@ result_df['Prompt Area Message'] = data_area_prompts
 result_df['Prompt Rooms Message'] = data_room_prompts
 result_df['Prompt Floor Message'] = data_floor_promps
 
+result_df['Floors'] = result_df['Floors'].astype(str)
+result_df['Floors_GPT'] = result_df['Floors_GPT'].astype(str)
+
+result_df['Floors'] = result_df['Floors'].apply(lambda x: x.strip().lower())
+result_df['Floors_GPT'] = result_df['Floors_GPT'].apply(lambda x: x.strip().lower())
+
 
 
 result_df['Area Error'] = np.where((result_df['Inner'] == result_df['Inner_GPT']) & (result_df['Outer'] == result_df['Outer_GPT']), 0, 1)
@@ -221,12 +226,12 @@ result_df_filtered_errors[['Name','Inner','Outer','Inner_GPT','Outer_GPT','Promp
 
 result_df['Room Error'] = np.where((result_df['Dens'] == result_df['Dens_GPT']) & (result_df['Bathrooms'] == result_df['Bathrooms_GPT'] &
                                                                                    (result_df['Bedrooms'] == result_df['Bedrooms_GPT'])), 0, 1)
-print(f"Propotion of area mistakes: {round(sum(result_df['Room Error'])/len(result_df['Room Error']),2)*100}%")
+print(f"Propotion of rooms mistakes: {round(sum(result_df['Room Error'])/len(result_df['Room Error']),2)*100}%")
 result_df_filtered_errors = result_df[result_df['Room Error'] == 1]
 result_df_filtered_errors[['Name','Dens','Bedrooms','Bathrooms','Dens_GPT','Bedrooms_GPT','Bathrooms_GPT','Prompt Rooms Message']].to_excel("room_errors.xlsx")
 
 
-result_df['Floor Error'] = np.where((result_df['Floors'] == result_df['Floors_GPT']), 0, 1)
+result_df['Floor Error'] = np.where(result_df['Floors'] == result_df['Floors_GPT'], 0, 1)
 print(f"Propotion of floor mistakes: {round(sum(result_df['Floor Error'])/len(result_df['Floor Error']),2)*100}%")
 result_df_filtered_errors = result_df[result_df['Floor Error'] == 1]
 result_df_filtered_errors[['Name','Floors','Floors_GPT','Prompt Floor Message']].to_excel("floor_errors.xlsx")
