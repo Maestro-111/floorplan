@@ -29,22 +29,28 @@ with open('prompt_area.txt', 'r') as file:
 with open('prompt_rooms.txt', 'r') as file:
     message_rooms_template = file.read()
 
+with open('prompt_floors.txt', 'r') as file:
+    message_floors_template = file.read()
 
-result_df = joined_dfs[['Name','Inner','Outer','Dens','Bedrooms','Bathrooms']]
+result_df = joined_dfs[['Name','Inner','Outer','Dens','Bedrooms','Bathrooms','Floors']]
 
 
 data_inners = []
 data_outers = []
 data_area_prompts = []
 data_room_prompts = []
+data_floor_promps = []
 data_dens = []
 data_bathrooms = []
 data_bedrooms = []
+data_floors = []
 
 for row in joined_dfs.iterrows():
 
     ocr_out = row[1]['Response']
     file_name = row[1]['Name']
+
+    ############# AREA
 
     res = message_area_template.format(len(ocr_out), ocr_out)
 
@@ -112,6 +118,8 @@ for row in joined_dfs.iterrows():
 
     data_area_prompts.append(res)
 
+    ########## ROOM
+
     res = message_rooms_template.format(ocr_out)
 
     chat_completion = client.chat.completions.create(
@@ -156,6 +164,40 @@ for row in joined_dfs.iterrows():
 
     data_room_prompts.append(res)
 
+    ####### FLOORS
+
+    res = message_floors_template.format(ocr_out)
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": res,
+            }
+        ],
+        model="gpt-4",
+        temperature=1,
+    )
+
+
+    resp = chat_completion.choices[0].message.content
+    resp = resp.split('\n')
+    resp = [i for i in resp if i]
+    floors_gpt_output = '0-0'
+
+    if len(resp) != 1:
+        data_floors.append(floors_gpt_output)
+    else:
+        floors = resp[0]
+        name,value = floors.split(":")
+        floors_gpt_output = value
+        data_floors.append(floors_gpt_output)
+
+    data_floor_promps.append(res)
+
+    print(floors_gpt_output)
+
+
 
 result_df['Inner_GPT'] = data_inners
 result_df['Outer_GPT'] = data_outers
@@ -164,24 +206,27 @@ result_df['Dens_GPT'] = data_dens
 result_df['Bathrooms_GPT'] = data_bathrooms
 result_df['Bedrooms_GPT'] = data_bedrooms
 
+result_df['Floors_GPT'] = data_floors
+
 result_df['Prompt Area Message'] = data_area_prompts
 result_df['Prompt Rooms Message'] = data_room_prompts
+result_df['Prompt Floor Message'] = data_floor_promps
 
 
 
 result_df['Area Error'] = np.where((result_df['Inner'] == result_df['Inner_GPT']) & (result_df['Outer'] == result_df['Outer_GPT']), 0, 1)
-
 print(f"Propotion of area mistakes: {round(sum(result_df['Area Error'])/len(result_df['Area Error']),2)*100}%")
-
-
 result_df_filtered_errors = result_df[result_df['Area Error'] == 1]
 result_df_filtered_errors[['Name','Inner','Outer','Inner_GPT','Outer_GPT','Prompt Area Message']].to_excel("area_errors.xlsx")
 
 result_df['Room Error'] = np.where((result_df['Dens'] == result_df['Dens_GPT']) & (result_df['Bathrooms'] == result_df['Bathrooms_GPT'] &
                                                                                    (result_df['Bedrooms'] == result_df['Bedrooms_GPT'])), 0, 1)
-
 print(f"Propotion of area mistakes: {round(sum(result_df['Room Error'])/len(result_df['Room Error']),2)*100}%")
-
-
 result_df_filtered_errors = result_df[result_df['Room Error'] == 1]
 result_df_filtered_errors[['Name','Dens','Bedrooms','Bathrooms','Dens_GPT','Bedrooms_GPT','Bathrooms_GPT','Prompt Rooms Message']].to_excel("room_errors.xlsx")
+
+
+result_df['Floor Error'] = np.where((result_df['Floors'] == result_df['Floors_GPT']), 0, 1)
+print(f"Propotion of floor mistakes: {round(sum(result_df['Floor Error'])/len(result_df['Floor Error']),2)*100}%")
+result_df_filtered_errors = result_df[result_df['Floor Error'] == 1]
+result_df_filtered_errors[['Name','Floors','Floors_GPT','Prompt Floor Message']].to_excel("floor_errors.xlsx")
