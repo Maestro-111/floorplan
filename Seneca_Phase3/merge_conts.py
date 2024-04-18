@@ -245,26 +245,11 @@ def process_text_from_tesseract(text_data):
 
 
 
-def run(info_dir):
-
-    txts_path = []
-    images_path = []
-
-    for folder in os.listdir(info_dir):
-        path = os.path.join(info_dir,folder)
-        for content in os.listdir(path):
-            if folder == 'coords':
-                txts_path.append(os.path.join(path,content))
-            else:
-                images_path.append(os.path.join(path,content))
-
-    img_txt = list(zip(txts_path,images_path))
+def run(img_txt):
 
     mark = 1
 
     data_names = []
-    data_inners = []
-    data_outers = []
     ocr_resp = []
 
     for txt_path,image_path in img_txt:

@@ -31,6 +31,8 @@ import zipfile
 from craft import CRAFT
 from merge_conts import run
 
+from key_plates_analysis import analyze_plates
+
 from collections import OrderedDict
 
 
@@ -51,6 +53,39 @@ def create_folder_if_not_exists(folder_path):
         print(f"Folder created: {folder_path}")
     else:
         print(f"Folder already exists: {folder_path}")
+
+
+
+def create_metedata_folders():
+
+    res_dir = 'result'
+    copy_dir = 'tets_boxes_from_craft/coords'
+
+    for file in os.listdir(res_dir):
+        if '.txt' in file:
+            shutil.copy(os.path.join(res_dir, file), copy_dir)
+
+    img_dir = 'test'
+    copy_dir = 'tets_boxes_from_craft/imgs'
+
+    for file in os.listdir(img_dir):
+        shutil.copy(os.path.join(img_dir, file), copy_dir)
+
+    txts_path = []
+    images_path = []
+
+    for folder in os.listdir('tets_boxes_from_craft'):
+        path = os.path.join('tets_boxes_from_craft',folder)
+        for content in os.listdir(path):
+            if folder == 'coords':
+                txts_path.append(os.path.join(path,content))
+            else:
+                images_path.append(os.path.join(path,content))
+
+    img_txt = list(zip(txts_path,images_path))
+
+    return img_txt
+
 
 
 def create_folders():
@@ -78,8 +113,8 @@ def str2bool(v):
 
 parser = argparse.ArgumentParser(description='CRAFT Text Detection')
 parser.add_argument('--trained_model', default='weights/craft_mlt_25k.pth', type=str, help='pretrained model')
-parser.add_argument('--text_threshold', default=0.4, type=float, help='text confidence threshold')
-parser.add_argument('--low_text', default=0.1, type=float, help='text low-bound score')
+parser.add_argument('--text_threshold', default=0.05, type=float, help='text confidence threshold')
+parser.add_argument('--low_text', default=0.05, type=float, help='text low-bound score')
 parser.add_argument('--link_threshold', default=0.5, type=float, help='link confidence threshold')
 parser.add_argument('--cuda', default=False, type=str2bool, help='Use cuda for inference')
 parser.add_argument('--canvas_size', default=1280, type=int, help='image size for inference')
@@ -90,6 +125,8 @@ parser.add_argument('--test_folder', default='/data/', type=str, help='folder pa
 parser.add_argument('--refine', default=False, action='store_true', help='enable link refiner')
 parser.add_argument('--refiner_model', default='weights/craft_refiner_CTW1500.pth', type=str, help='pretrained refiner model')
 parser.add_argument('--custom_prep', default=False, help='do custom prep')
+parser.add_argument('--key_plates', default=False, help='do key plates analysis')
+parser.add_argument('--key_plates_save_path', default=r'C:\floorplan\Seneca_Phase3\unit_testing',type=str, help='where to save unit nums')
 
 args = parser.parse_args()
 
@@ -208,29 +245,22 @@ if __name__ == '__main__':
 
     create_folders()
 
+    if args.key_plates:
+
+        img_txt = create_metedata_folders()
+        analyze_plates(img_txt,args.key_plates_save_path)
+
+
     if args.custom_prep:
-        res_dir = 'result'
-        copy_dir = 'tets_boxes_from_craft/coords'
 
-        for file in os.listdir(res_dir):
-            if '.txt' in file:
-                shutil.copy(os.path.join(res_dir, file), copy_dir)
-
-        img_dir = 'test'
-        copy_dir = 'tets_boxes_from_craft/imgs'
-
-
-        for file in os.listdir(img_dir):
-            shutil.copy(os.path.join(img_dir, file), copy_dir)
-
-
-        run('tets_boxes_from_craft')
+        img_txt = create_metedata_folders()
+        run(img_txt)
 
 
 
-        delete_files_in_directory('result')
-        delete_files_in_directory('tets_boxes_from_craft/coords')
-        delete_files_in_directory('tets_boxes_from_craft/imgs')
+    delete_files_in_directory('result')
+    delete_files_in_directory('tets_boxes_from_craft/coords')
+    delete_files_in_directory('tets_boxes_from_craft/imgs')
 
     print("elapsed time : {}s".format(time.time() - t))
 
