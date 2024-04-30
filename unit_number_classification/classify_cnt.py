@@ -32,6 +32,14 @@ class_names = ['key_plates', 'other']
 DIM = (224,224)
 SAVE_LOC = r'C:\floorplan\Seneca_Phase3\unit_testing\unit_number.xlsx'
 SHEET = 'Unit Number Info'
+PYTHON_PATH = r'C:/Python39/python.exe'
+
+data = 'sample'
+
+image_num = 0
+root = 72
+
+cut_pixels = 10 # cut image for all directions by 10 pixels
 
 
 
@@ -53,7 +61,7 @@ def clear_sheet(excel_file, sheet_name):
 
 
 def run_craft():
-    python_path = r'C:/Python39/python.exe'
+    python_path = PYTHON_PATH
     command = [python_path, r"C:\floorplan\Seneca_Phase3\test.py", "--trained_model", r"C:\floorplan\Seneca_Phase3\craft_mlt_25k.pth", "--test_folder", "test/",
                '--text_threshold','0.05','--low_text','0.05','--link_threshold','0.5','--key_plates','True','--key_plates_save_path',f'{SAVE_LOC}']
     subprocess.run(command)
@@ -202,7 +210,7 @@ def merge_close_contours(contours, threshold=30):
 
     return merged_contours
 
-def enh(img,factor,s): # image_enhacer
+def enhance_and_reshape(img,factor,s): # image_enhacer
 
     if img.mode != 'RGB':
         img = img.convert('RGB')
@@ -214,14 +222,20 @@ def enh(img,factor,s): # image_enhacer
 
     return sharpened_img
 
-data = 'sample'
-image_num = 0
-root = 72
+def create_folder_if_not_exists(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"Folder created: {folder_path}")
+    else:
+        print(f"Folder already exists: {folder_path}")
 
-cut_pixels = 10
+
+create_folder_if_not_exists('coords')
+create_folder_if_not_exists('tmp_rects')
+create_folder_if_not_exists('test')
 
 
-clear_sheet(SAVE_LOC,SHEET)
+clear_sheet(SAVE_LOC,SHEET) # make sure excel file is empty
 
 for image_path_original in os.listdir(data):
 
@@ -333,7 +347,7 @@ for image_path_original in os.listdir(data):
     for coord,image_path in paths:
 
         img = Image.open(image_path)
-        img = enh(img, 7, DIM) # prep
+        img = enhance_and_reshape(img, 7, DIM) # prep
         img_array = np.array(img)
         img = tf.expand_dims(img, axis=0)
 
@@ -391,6 +405,3 @@ for image_path_original in os.listdir(data):
     delete_files_in_directory("tmp_rects")
     delete_files_in_directory("coords")
     delete_files_in_directory("test")
-
-
-delete_files_in_directory("coords")

@@ -72,6 +72,8 @@ for row in joined_dfs.iterrows():
     iner_gpt_output = 0
     outer_gpt_output = 0
 
+    print(resp)
+
     if len(resp) != 2:
         print("Could not extract area info\n")
 
@@ -191,6 +193,8 @@ for row in joined_dfs.iterrows():
         floors = resp[0]
         name,value = floors.split(":")
         floors_gpt_output = value
+        floors_gpt_output = floors_gpt_output.strip()
+        floors_gpt_output = ','.join(sorted(floors_gpt_output.split(','), reverse=True))
         data_floors.append(floors_gpt_output)
 
     data_floor_promps.append(res)
@@ -217,6 +221,11 @@ result_df['Floors_GPT'] = result_df['Floors_GPT'].astype(str)
 result_df['Floors'] = result_df['Floors'].apply(lambda x: x.strip().lower())
 result_df['Floors_GPT'] = result_df['Floors_GPT'].apply(lambda x: x.strip().lower())
 
+def process_column(row):
+    floors_list = row.split(',')
+    sorted_floors_list = sorted(floors_list, reverse=True)
+    result_str = ','.join(sorted_floors_list)
+    return result_str
 
 
 result_df['Area Error'] = np.where((result_df['Inner'] == result_df['Inner_GPT']) & (result_df['Outer'] == result_df['Outer_GPT']), 0, 1)
@@ -231,7 +240,9 @@ result_df_filtered_errors = result_df[result_df['Room Error'] == 1]
 result_df_filtered_errors[['Name','Dens','Bedrooms','Bathrooms','Dens_GPT','Bedrooms_GPT','Bathrooms_GPT','Prompt Rooms Message']].to_excel("room_errors.xlsx")
 
 
-result_df['Floor Error'] = np.where(result_df['Floors'] == result_df['Floors_GPT'], 0, 1)
+result_df['Floors_Processed'] = result_df['Floors'].apply(process_column)
+
+result_df['Floor Error'] = np.where(result_df['Floors_Processed'] == result_df['Floors_GPT'], 0, 1)
 print(f"Propotion of floor mistakes: {round(sum(result_df['Floor Error'])/len(result_df['Floor Error']),2)*100}%")
 result_df_filtered_errors = result_df[result_df['Floor Error'] == 1]
-result_df_filtered_errors[['Name','Floors','Floors_GPT','Prompt Floor Message']].to_excel("floor_errors.xlsx")
+result_df_filtered_errors[['Name','Floors','Floors_Processed','Floors_GPT','Prompt Floor Message']].to_excel("floor_errors.xlsx")
