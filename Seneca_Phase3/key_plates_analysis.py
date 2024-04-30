@@ -57,8 +57,8 @@ def analyze_plates(img_txt,save_path):
         name = name[2:]
         image_name = name
 
-        print(name)
-        print("!"*100)
+        #print(name)
+        #print("!"*100)
 
         img = Image.open(image_path)
 
@@ -68,7 +68,12 @@ def analyze_plates(img_txt,save_path):
         for point in points:
             x1,y1,x2,y2,x3,y3,x4,y4 = point
 
-            fraction = img.crop((x1, y1, x3, y3))
+
+            try:
+                fraction = img.crop((x1, y1, x3, y3))
+            except ValueError:
+                continue
+
 
             if has_colored_background(fraction):
 
@@ -86,8 +91,8 @@ def analyze_plates(img_txt,save_path):
     unit_nums_for_image = [';'.join(numbers[image_name])]
     names = [image_name]
 
-    print(unit_nums_for_image)
-    print(names)
+    #print(unit_nums_for_image)
+    #print(names)
 
     matrix = np.array([names, unit_nums_for_image])
 
