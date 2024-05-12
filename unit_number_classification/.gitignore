@@ -1,9 +1,0 @@
-*.h5 
-dataset 
-surveys
-.idea 
-__pycache__ 
-*.keras 
-tets_boxes_from_craft*
-result*
-test*

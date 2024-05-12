@@ -16,7 +16,6 @@ import tensorflow as tf
 import keras
 
 from sklearn.model_selection import GridSearchCV
-from scikeras.wrappers import KerasClassifier
 
 from sklearn.pipeline import Pipeline
 
@@ -123,8 +122,6 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
 
 
 
-
-
     best_model_for_training = CNN(num_classes, DIM, TARGET_NAME)
 
     #best_model_for_training.reserve_model()
@@ -136,7 +133,8 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
     best_model_for_training.summary()
     best_model_for_training.plot_training_hist(history, '3-layers CNN', ['red', 'orange'], ['blue', 'green'])
     best_model_for_training.evaluate_model(test_dataset,class_names)
-    best_model_for_training.save(f'{MODEL_NAME}.keras')
+
+    best_model_for_training.save(f'C:/floorplan/{MODEL_NAME}.keras')
 
 
 pipeline(delete=True,process=True,aug=True,train_test=True)

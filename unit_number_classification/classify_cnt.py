@@ -16,7 +16,6 @@ import subprocess
 
 import openpyxl
 
-
 # using 1
 
 # 1 current
@@ -25,16 +24,17 @@ import openpyxl
 # 4  obsolete
 # 5 current
 
-model = keras.models.load_model('C:/new_CNN/model1.keras')
+model = keras.models.load_model(r'C:\floorplan\model1.keras')
 
 PROB = 0.1
+
 class_names = ['key_plates', 'other']
 DIM = (224,224)
-SAVE_LOC = r'C:\floorplan\Seneca_Phase3\unit_testing\unit_number.xlsx'
+SAVE_LOC = r'C:\floorplan\unit_testing\unit_number.xlsx'
 SHEET = 'Unit Number Info'
 PYTHON_PATH = r'C:/Python39/python.exe'
 
-data = 'sample'
+data = 'C:/floorplan/sample'
 
 image_num = 0
 root = 72
@@ -62,7 +62,7 @@ def clear_sheet(excel_file, sheet_name):
 
 def run_craft():
     python_path = PYTHON_PATH
-    command = [python_path, r"C:\floorplan\Seneca_Phase3\test.py", "--trained_model", r"C:\floorplan\Seneca_Phase3\craft_mlt_25k.pth", "--test_folder", "test/",
+    command = [python_path, r"C:\CRAFT\test.py", "--trained_model", r"C:\CRAFT\craft_mlt_25k.pth",
                '--text_threshold','0.05','--low_text','0.05','--link_threshold','0.5','--key_plates','True','--key_plates_save_path',f'{SAVE_LOC}']
     subprocess.run(command)
 

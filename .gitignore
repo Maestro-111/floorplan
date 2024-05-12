@@ -127,3 +127,29 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+*.h5 
+dataset 
+surveys
+.idea 
+__pycache__ 
+*.keras 
+test_boxes_from_craft*
+result*
+test*
+
+*.pyc
+*.swp
+*.pkl
+*.pth
+*.csv
+result*
+weights*
+contours
+area_errors.xlsx
+craft_ocr_output.xlsx
+room_errors.xlsx
+venv
+.idea
+floor_errors.xlsx
+unit_number.xlsx

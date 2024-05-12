@@ -46,7 +46,6 @@ requests==2.31.0
 requests-oauthlib==2.0.0
 rich==13.7.1
 rsa==4.9
-scikeras==0.13.0
 scikit-learn==1.4.2
 scipy==1.13.0
 six==1.16.0
