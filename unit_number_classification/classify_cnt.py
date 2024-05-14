@@ -43,6 +43,7 @@ cut_pixels = 10 # cut image for all directions by 10 pixels
 
 
 
+
 def clear_sheet(excel_file, sheet_name):
     # Load the Excel workbook
     wb = openpyxl.load_workbook(excel_file)
@@ -299,7 +300,6 @@ for image_path_original in os.listdir(data):
     merged_rectangles = merge_intersecting_rectangles(rectangles,n_iterations=10)
     merged_rectangles = convert_to_cnt(merged_rectangles)
     merged_contours = merged_rectangles
-    #merged_contours = remove_contours_inside(merged_contours)
 
 
     merged_contours = [cnt for cnt in merged_contours if cv2.contourArea(cnt) > 3000]
