@@ -1,29 +1,35 @@
 import subprocess
 import shutil
+
+from pathlib import Path
 import os
 
-SAVE_LOC = r'C:\floorplan\unit_testing\unit_number.xlsx'
 
-PYTHON_PATH = r'C:/Python39/python.exe'
-ocr_save_path = r"C:\floorplan\unit_testing\craft_ocr_output.xlsx"
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-sample = 'C:/floorplan/sample'
+
+PYTHON_PATH = 'C:/Python39/python.exe'
+ocr_save_path = os.path.join(BASE_DIR, "unit_testing/craft_ocr_output.xlsx")
+
+CRAFT_PATH = os.path.join(BASE_DIR,"CRAFT/test.py")
+CRAFT_MODEL_PATH = os.path.join(BASE_DIR,"CRAFT/craft_mlt_25k.pth")
+
+
+data = os.path.join(BASE_DIR, 'sample')
 
 
 def run_craft():
     python_path = PYTHON_PATH
-    command = [python_path, r"C:\CRAFT\test.py", "--trained_model", r"C:\CRAFT\craft_mlt_25k.pth",
+    command = [python_path, CRAFT_PATH, "--trained_model", CRAFT_MODEL_PATH,
                "--custom_prep","True","--ocr_save_path", ocr_save_path]
     subprocess.run(command)
 
 if __name__ == "__main__":
 
-    # copy them
+    copy_dir = os.path.join(BASE_DIR,'room_floor_area_classification/test')
 
-    copy_dir = 'C:/floorplan/room_floor_area_classification/test'
-
-    for image in os.listdir(sample):
-        shutil.copy(os.path.join(sample, image), os.path.join(copy_dir,image))
+    for image in os.listdir(data):
+        shutil.copy(os.path.join(data, image), os.path.join(copy_dir,image))
 
     run_craft()
 

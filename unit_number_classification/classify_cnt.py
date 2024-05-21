@@ -16,25 +16,33 @@ import subprocess
 
 import openpyxl
 
-# using 1
+from pathlib import Path
+import os
 
-# 1 current
-# 2 obsolete
-# 3 obsolete
-# 4  obsolete
-# 5 current
 
-model = keras.models.load_model(r'C:\floorplan\model1.keras')
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+model = keras.models.load_model(os.path.join(BASE_DIR,'model1.keras'))
 
 PROB = 0.1
 
 class_names = ['key_plates', 'other']
 DIM = (224,224)
-SAVE_LOC = r'C:\floorplan\unit_testing\unit_number.xlsx'
-SHEET = 'Unit Number Info'
-PYTHON_PATH = r'C:/Python39/python.exe'
 
-data = 'C:/floorplan/sample'
+
+SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/unit_number.xlsx')
+SHEET = 'Unit Number Info'
+
+
+PYTHON_PATH = 'C:/Python39/python.exe' #os.path.join(BASE_DIR,'CRAFT/venv/Scripts/python.exe')
+
+
+CRAFT_PATH = os.path.join(BASE_DIR,"CRAFT/test.py")
+CRAFT_MODEL_PATH = os.path.join(BASE_DIR,"CRAFT/craft_mlt_25k.pth")
+
+data = os.path.join(BASE_DIR, 'sample')
 
 image_num = 0
 root = 72
@@ -42,9 +50,10 @@ root = 72
 cut_pixels = 10 # cut image for all directions by 10 pixels
 
 
-
-
 def clear_sheet(excel_file, sheet_name):
+    """
+    Clearing excel file in unit testing folder
+    """
     # Load the Excel workbook
     wb = openpyxl.load_workbook(excel_file)
 
@@ -61,9 +70,11 @@ def clear_sheet(excel_file, sheet_name):
 
 
 
+
+
 def run_craft():
-    python_path = PYTHON_PATH
-    command = [python_path, r"C:\CRAFT\test.py", "--trained_model", r"C:\CRAFT\craft_mlt_25k.pth",
+
+    command = [PYTHON_PATH, CRAFT_PATH, "--trained_model", CRAFT_MODEL_PATH,
                '--text_threshold','0.05','--low_text','0.05','--link_threshold','0.5','--key_plates','True','--key_plates_save_path',f'{SAVE_LOC}']
     subprocess.run(command)
 
