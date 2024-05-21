@@ -1,0 +1,10 @@
+Given these {} strings derived from the floor plan image with help of OCR engine (each is separated by ;): {}
+
+determine which string describes the inner total area and total area and in that string get inner total area number and total area number. Inner area is area of the floor plan that excludes any outer objects.
+At the same time total area equal total area of the floor plan, that includes inner area and any outer objects. 
+Finally, if there is only one number in a string it is more likely that is the inner area, not total area. 
+Give your response in this format: 
+inner total area : found area
+total area: found area
+Note that the strings derived from the floor plan may have typos because of OCR engine. Also, make sure that there are 2 separate responses: one for inner and one for outer area e.g the delimetr between them should be newline delimiter. 
+Finally, if you have not found inner total area or total area, return inner total area : 0 or total area : 0. 

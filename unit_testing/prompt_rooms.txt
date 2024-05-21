@@ -1,0 +1,7 @@
+Given these strings separated by ';' derived from the floor plans with the help of OCR engine: {}
+        
+determine, what is the number of bedrooms, dens and bathrooms. Give resposnse in this format:
+
+bedrooms: found quantity, if no quantity found say 0
+dens: found quantity,if no quantity found say 0
+bathrooms: found quantity, if no quantity found say 0
