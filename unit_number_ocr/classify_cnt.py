@@ -24,7 +24,7 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-model = keras.models.load_model(os.path.join(BASE_DIR,'model1.keras'))
+model = keras.models.load_model(os.path.join(BASE_DIR,'keyplates_classifier.keras'))
 
 PROB = 0.1
 
@@ -103,6 +103,9 @@ def is_contour_inside(contour1, contour2,eps=0): # check if contour1 in contour2
     return x2 <= x1+eps and y2 <= y1 + eps and x2 + w2 + eps >= x1 + w1 and y2 + h2 + eps >= y1 + h1
 
 def convert_to_cnt(points_list):
+    """
+    convert points list to contours
+    """
     contours = []
     for points in points_list:
         contour = np.array(points, dtype=np.int32).reshape((-1, 1, 2))
@@ -279,7 +282,7 @@ for image_path_original in os.listdir(data):
     #plt.show()
 
 
-    sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True) # sort by area and flter out the biggest since its the image itself
     contours = sorted_contours[1:]
 
     filtered_cnts_by_area = []
@@ -326,6 +329,8 @@ for image_path_original in os.listdir(data):
 
     count_images = 0
     count_txt = 0
+
+    # store coords of the boxes and contours to the appropriate folders
 
     for cnt in merged_contours:
 
@@ -396,6 +401,8 @@ for image_path_original in os.listdir(data):
     count = 0
 
     test_folder = 'test'
+
+    # copy key plates to test folder
 
     for x, y, w, h,p in key_plates:
         cv2.rectangle(contour_image, (x, y), (x + w, y + h), (0, 255, 0), 3)

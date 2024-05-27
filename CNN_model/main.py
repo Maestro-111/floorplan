@@ -25,7 +25,7 @@ OPPOSITE_NAME = 'other'
 DIM = (224,224,3)
 FACTOR = 7
 SOURCE = 'C:\metadata_craft1'
-MODEL_NAME = 'model1'
+MODEL_NAME = 'keyplates_classifier'
 EPOCHS = 20
 BATCH = 32
 

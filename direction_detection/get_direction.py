@@ -39,7 +39,8 @@ def analyze_image_GPT(img_path):
         "content": [
           {
             "type": "text",
-            "text": "Given this floor plan image, what is the specified direction (north,east,west or south)?"
+            "text": "there is an arrow besides the key plate object, pointing to the north."
+                    "Given that, identify what is the direction of the unit window (north,east,west,south)?"
                     "Give your response STRICTLY in this format: direction:your answer"
           },
           {
@@ -56,6 +57,8 @@ def analyze_image_GPT(img_path):
 
 
   response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+
+  print(response.json())
 
   lst = response.json()['choices'][0]['message']['content'].split(':')
 

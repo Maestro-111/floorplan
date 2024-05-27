@@ -18,6 +18,14 @@ PyTorch implementation for CRAFT text detector that effectively detect text area
 **28 Sep, 2019**: Added the trained model on IC15 and the link refiner
 
 
+##Custom Workflow (extension)
+We have 3 options to run our code
+1. Use the default mode (run with default params)
+2. Use area_floor_rooms_save_path flag. This flag turns on the workflow for room_floor_area_ocr module
+3. Use key_plates flag. This flag turns on the workflow for unit_number_ocr module
+
+
+
 ## Getting started
 ### Install dependencies
 #### Requirements
