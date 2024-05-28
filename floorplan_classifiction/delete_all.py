@@ -12,14 +12,11 @@ def clear_dirs():
             path = f'dataset/{type_dir}/{type_image}'
             delete_files_in_directory(directory_path=path)
 
-    delete_files_in_directory('test_data')
-
 
 def make_up_dirs():
     os.makedirs('data/floor_plans')
     os.makedirs('data/surveys')
     os.makedirs('data/other_images')
-    os.makedirs('test_data')
     os.makedirs('surveys')
 
     for type_dir in ['train', 'test', 'validation']:

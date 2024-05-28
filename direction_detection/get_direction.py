@@ -39,9 +39,9 @@ def analyze_image_GPT(img_path):
         "content": [
           {
             "type": "text",
-            "text": "there is an arrow besides the key plate object, pointing to the north."
-                    "Given that, identify what is the direction of the unit window (north,east,west,south)?"
-                    "Give your response STRICTLY in this format: direction:your answer"
+            "text": "On the given floorplan image there is some amount of key plate objects. Near each key plate there is an arrow poiting north. "
+                    "Keyplate contains regular numbers and numbers in COLORED section which are called unit numbers. "
+                    "Identify on which side (east west north south) unit numbers are located. "
           },
           {
             "type": "image_url",
@@ -58,7 +58,7 @@ def analyze_image_GPT(img_path):
 
   response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
-  print(response.json())
+  #print(response.json())
 
   lst = response.json()['choices'][0]['message']['content'].split(':')
 
@@ -84,7 +84,7 @@ for image in sample_images:
 
 
 for image in os.listdir(test_path):
-  print(f'Direction for {image} is' ,analyze_image_GPT(os.path.join(test_path, image)))
+  print(f'Direction for {image} is' , analyze_image_GPT(os.path.join(test_path, image)))
 
 print()
 delete_files_in_directory('test')

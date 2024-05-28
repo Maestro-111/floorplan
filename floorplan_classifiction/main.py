@@ -43,7 +43,8 @@ FACTOR = 5 # factor for image enhance - more it is, more sharppened the image is
 LIMIT = 7 # limit for CLAHE prepocessing for survey images - more it is the more drastic changes are going to be applied
 HEIGHT = 224
 WIDTH = 224
-
+MODEL_PATH_PREDS = 'C:/floorplan/floorplan_classifier.keras'
+MODEL_PATH_SAVE = 'C:/floorplan/floorplan_classifier.keras'
 
 
 class CustomException(Exception):
@@ -62,9 +63,7 @@ class DataHolder:
         self.floor_plan_train = None
         self.survey_train = None
         self.other_train = None
-        self.floor_plan_test = None
-        self.survey_test = None
-        self.other_test = None
+        self.predict = None
 
 
 
@@ -138,10 +137,10 @@ def train_model_and_save(train_dataset, validation_dataset, test_dataset,class_n
     history = CNN_net.train(train_dataset,validation_dataset,epochs=10)
     CNN_net.plot_training_hist(history, '3-layers CNN', ['red', 'orange'], ['blue', 'green'])
     CNN_net.evaluate_model(test_dataset,class_names)
-    CNN_net.save('floorplan_classify.keras')
+    CNN_net.save(MODEL_PATH_SAVE)
 
 
-def make_preds(class_names,model_path,path_for_floor_pdfs,path_for_survey_images,path_for_other_images,factor,clipLimit,prob,data_directory = 'test_data'):
+def make_preds(class_names,model_path,data_path):
 
     """
     make predictons on the new data
@@ -161,20 +160,12 @@ def make_preds(class_names,model_path,path_for_floor_pdfs,path_for_survey_images
 
     print(loaded_model)
 
-
-    if not os.path.exists(data_directory):
-        os.makedirs(data_directory)
-
-    delete_files_in_directory('test_data') # load all images to test_data folder
-    make_test_dir(prob,path_for_floor_pdfs,path_for_survey_images,path_for_other_images,output_folder=data_directory)
-
-
-    file_paths = [os.path.join(data_directory, f) for f in os.listdir(data_directory)]
+    file_paths = [os.path.join(data_path, f) for f in os.listdir(data_path)]
 
     # Make predictions
     predictions = []
     for file_path in file_paths:
-        img = preprocess_new_data(file_path,factor, clipLimit, 224,224)
+        img = preprocess_new_data(file_path, FACTOR, LIMIT, 224,224)
         img = tf.expand_dims(img, axis=0)  # Add batch dimension
 
         # Make prediction using the loaded model
@@ -182,28 +173,9 @@ def make_preds(class_names,model_path,path_for_floor_pdfs,path_for_survey_images
 
         predicted_class_index = np.argmax(prediction, axis=1)[0]
         predicted_class = class_names[predicted_class_index]
-        predictions.append(predicted_class)
+        predictions.append([file_path,predicted_class])
 
-
-    overall = 0
-    correct = 0
-
-    for file_path, prediction in zip(file_paths, predictions):
-        print(file_path)
-        if re.findall(r'[Ff]loor\s?_?\+?\-?[Pp]lan[s]?',file_path):
-            label = 'floor_plans'
-        elif re.findall(r'[Ss]urvey[sS]_\d+', file_path):
-            label= 'surveys'
-        else:
-            label = 'other_images'
-
-        if label == prediction:
-            correct += 1
-        print(f"File: {file_path}, Label: {label} , Prediction: {prediction}")
-        overall += 1
-
-    print(correct / overall)
-    print(f'Accuracy: {round(correct / overall, 3)}')
+    return predictions
 
 
 
@@ -244,30 +216,26 @@ def load_dataset_train_preds_chain(load_flag:bool,prep_flag:bool,train_test_flag
         with open('class_names.txt', 'r') as file:
             class_names = [name.strip('\n') for name in file.readlines()]
 
-        floor_plan, survey, other = holder.floor_plan_test, holder.survey_test, holder.other_test
 
-        print(floor_plan)
-        print(survey)
-        print(other)
+        preds_list = make_preds(class_names, model_path=MODEL_PATH_PREDS, data_path=holder.predict)
 
-        make_preds(class_names, model_path='floorplan_classify.keras', path_for_floor_pdfs=floor_plan,
-                   path_for_survey_images=survey, path_for_other_images=other, factor=FACTOR,clipLimit=LIMIT,
-                   prob=0.5)
+        for file, pred in preds_list:
+            print(f"for {file} prediction is {pred}\n")
 
 
-def main(train_save:int, test:int, training_image_data:str, testing_image_data:str):
+def main(train_save:int, predict:int, training_image_data:str, preds_image_data:str):
 
     """
     difine the way we will run load_dataset_train_preds_chain
     """
 
-    if train_save and test:
+    if train_save and predict:
         print("Executing full pipeline\n")
         strategy = 0
-    elif not train_save and test:
+    elif not train_save and predict:
         print("Executing testing\n")
         strategy = 1
-    elif train_save and not test:
+    elif train_save and not predict:
         print("Executing training\n")
         strategy = 2
     else:
@@ -290,21 +258,12 @@ def main(train_save:int, test:int, training_image_data:str, testing_image_data:s
             else: # other images
                 holder.other_train = os.path.join(root, image_folder_type)
 
-    if strategy in [0,1] and (not testing_image_data):
-        raise CustomException("Unspecified env var for testing\n")
+    if strategy in [0,1] and (not preds_image_data):
+        raise CustomException("Unspecified env var for predictions\n")
 
     if strategy != 2: #in case we are doing testing save the data paths in holder
 
-        root = testing_image_data
-
-        for image_folder_type in os.listdir(root):
-            if image_folder_type == 'floorplan':
-                holder.floor_plan_test = os.path.join(root, image_folder_type)
-            elif image_folder_type == 'survey':
-                holder.survey_test = os.path.join(root, image_folder_type)
-            else: # other images
-                holder.other_test = os.path.join(root, image_folder_type)
-
+        holder.predict = preds_image_data
 
 
     if strategy == 0: # full pipeline
@@ -329,17 +288,17 @@ if __name__ == "__main__":
 
     parser.add_argument("--train_save", type=int, choices=[0, 1],
                         help='load and prep data, then save the trained model', default=1)
-    parser.add_argument("--test", type=int, choices=[0, 1], help='predict for new images', default=1)
+    parser.add_argument("--predict", type=int, choices=[0, 1], help='predict for new images', default=1)
 
     parser.add_argument("--image_training_data", help='name of the training directory',
                         default=os.getenv('image_training_data'))  # def - env var
 
-    parser.add_argument("--image_testing_data", help='name of the testing directory',
-                        default=os.getenv('image_testing_data'))
+    parser.add_argument("--image_prediction_data", help='name of the testing directory',
+                        default=os.getenv('image_prediction_data'))
 
     args = parser.parse_args()
 
-    main(args.train_save, args.test, args.image_training_data, args.image_testing_data)
+    main(args.train_save, args.predict, args.image_training_data, args.image_prediction_data)
 
 
 

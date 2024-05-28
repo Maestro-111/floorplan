@@ -6,7 +6,9 @@
 
 
 ### To run the prog:
-1. Run the main.py file
+1. Create venv 
+2. Install all packs in req.txt
+3. Run the main.py file
 
 
 

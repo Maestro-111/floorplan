@@ -173,7 +173,7 @@ def augementation(survey_images_dir,floors_images_dir,output_dir):
 
     # Perform augmentation and save the augmented images
     for img_path in survey_images:
-        img = Image.open(img_path) #load_and_preprocess_image(img_path)  # You need to define this function to load and preprocess images
+        img = Image.open(img_path)
         if img.mode != 'RGB':
             img = img.convert('RGB')
         img = np.array(img)

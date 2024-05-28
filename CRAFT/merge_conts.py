@@ -91,6 +91,12 @@ def merge_close_contours(contours, threshold):
 
 def get_boxes(merged,copy,img,lst,global_mark:int):
 
+    """
+
+    modify lst: append roi for the given image given merged (lst of contours)
+
+    """
+
     count = 0
 
     for cnt in merged: # for each box in current image
@@ -99,13 +105,6 @@ def get_boxes(merged,copy,img,lst,global_mark:int):
         cv2.rectangle(copy, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
         roi_c = img[y:y + h, x:x + w]
-
-        # global mark is used to save each box with its image label
-
-        image_filename = f"roi_{global_mark}_{count}.jpg"
-        image_path = os.path.join('contours', image_filename)
-        cv2.imwrite(image_path, roi_c)
-        count+= 1
 
         new_width = 4 * roi_c.shape[1]
         new_height = 4 * roi_c.shape[0]
@@ -116,15 +115,7 @@ def get_boxes(merged,copy,img,lst,global_mark:int):
         except cv2.error:
             lst.append(roi_c)
 
-    #plt.imshow(copy)
-    #plt.show()
 
-
-    for file in os.listdir('contours'):
-        file_path = os.path.join('contours', file)
-        os.remove(file_path)
-
-    return
 
 
 def merge_intersecting_rectangles(rectangles, n_iterations):
@@ -252,10 +243,7 @@ def run(img_txt,location):
     for txt_path,image_path in img_txt:
         points = read_coords(txt_path)
 
-        ROI = merge_existing_boxes(image_path,points,mark)
-
-        pattern_sq = r'[sS][qQ]'
-        pattern_ft = r'[fF][tT]'
+        ROI = merge_existing_boxes(image_path,points,mark) # collection of rois for each image
 
         area_cand = []
         all_sent = []
@@ -264,7 +252,11 @@ def run(img_txt,location):
 
         for roi in ROI: # for eeach box
 
-            result = reader.readtext(roi)
+            try:
+                result = reader.readtext(roi)
+            except cv2.error as e:
+                print(f"for the given image {image_path} the following error occured: {e}")
+                continue
 
             sentence = []
 

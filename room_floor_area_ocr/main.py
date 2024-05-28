@@ -26,7 +26,7 @@ def run_craft():
 
 if __name__ == "__main__":
 
-    copy_dir = os.path.join(BASE_DIR,'room_floor_area_classification/test')
+    copy_dir = os.path.join(BASE_DIR,'room_floor_area_ocr/test')
 
     for image in os.listdir(data):
         shutil.copy(os.path.join(data, image), os.path.join(copy_dir,image))

@@ -4,8 +4,8 @@
 ### To run the prog:
 1. Create venv and activate it
 2. Install all dependencies in req.txt
-3. Configure 2 env variables: image_training_data and image_testing_data. They specify the path to data for training/testing.
-4. Finally, run main.py
+3. Configure 2 env variables: image_training_data and image_prediction_data. They specify the path to data for training/predictions (images should not be in pdf for predictions).
+4. Finally, run main.py (command : python main.py --help)
 
 
 
