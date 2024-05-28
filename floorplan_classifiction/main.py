@@ -7,28 +7,28 @@ Add folder creation
 import os
 import re
 
-from sample import create_datasets
-from sample import make_confusion_matrix
-from sample import neural_net_mixin
-from sample import CNN
+from model import create_datasets
+from model import make_confusion_matrix
+from model import neural_net_mixin
+from model import CNN
 
-from convert_pdf_to_jpg import delete_files_in_directory
-from other_prediction import preprocess_new_data
-from other_prediction import make_test_dir
+from image_wrangling import delete_files_in_directory
+from prediction import preprocess_new_data
+from prediction import make_test_dir
 
-from convert_pdf_to_jpg import delete_files_in_directory
-from convert_pdf_to_jpg import make_floor_plans
-from convert_pdf_to_jpg import extract_images_from_pdf
-from convert_pdf_to_jpg import removeFile
-from convert_pdf_to_jpg import copy_sur
-from convert_pdf_to_jpg import copy_other
+from image_wrangling import delete_files_in_directory
+from image_wrangling import make_floor_plans
+from image_wrangling import extract_images_from_pdf
+from image_wrangling import removeFile
+from image_wrangling import copy_sur
+from image_wrangling import copy_other
 
-from make_dataset import augementation
-from make_dataset import count_files_in_directory
-from make_dataset import save_to_dataset
-from make_dataset import enh
-from make_dataset import sharp_and_res
-from make_dataset import apply_clahe
+from data_preparation import augementation
+from data_preparation import count_files_in_directory
+from data_preparation import save_to_dataset
+from data_preparation import enh
+from data_preparation import sharp_and_res
+from data_preparation import apply_clahe
 
 from delete_all import clear_dirs
 from delete_all import make_up_dirs

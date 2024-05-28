@@ -5,17 +5,17 @@ import numpy as np
 from PIL import Image
 import random
 import shutil
-from convert_pdf_to_jpg import delete_files_in_directory
+from image_wrangling import delete_files_in_directory
 import matplotlib.pyplot as plt
 import re
 import cv2
-from make_dataset import enh
-from make_dataset import apply_clahe
+from data_preparation import enh
+from data_preparation import apply_clahe
 
 
-from convert_pdf_to_jpg import make_floor_plans
-from convert_pdf_to_jpg import copy_sur
-from convert_pdf_to_jpg import copy_other
+from image_wrangling import make_floor_plans
+from image_wrangling import copy_sur
+from image_wrangling import copy_other
 
 
 def make_test_dir(r,floor_path,survey,other,output_folder):

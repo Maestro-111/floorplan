@@ -9,7 +9,7 @@ from PIL import ImageEnhance
 import matplotlib.pyplot as plt
 import random
 import shutil
-from convert_pdf_to_jpg import delete_files_in_directory
+from image_wrangling import delete_files_in_directory
 import cv2
 
 
