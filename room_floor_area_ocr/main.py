@@ -8,7 +8,10 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-PYTHON_PATH = 'C:/Python39/python.exe'
+PYTHON_PATH = os.path.join(BASE_DIR,r'CRAFT\venv\Scripts\python.exe') #'C:/Python39/python.exe'
+
+print(PYTHON_PATH)
+
 area_floor_rooms_save_path = os.path.join(BASE_DIR, "unit_testing/craft_ocr_output.xlsx")
 
 CRAFT_PATH = os.path.join(BASE_DIR,"CRAFT/test.py")
@@ -19,8 +22,7 @@ data = os.path.join(BASE_DIR, 'sample')
 
 
 def run_craft():
-    python_path = PYTHON_PATH
-    command = [python_path, CRAFT_PATH, "--trained_model", CRAFT_MODEL_PATH,
+    command = [PYTHON_PATH, CRAFT_PATH, "--trained_model", CRAFT_MODEL_PATH,
                "--area_floor_rooms","True","--area_floor_rooms_save_path", area_floor_rooms_save_path]
     subprocess.run(command)
 

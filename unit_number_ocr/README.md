@@ -10,7 +10,7 @@
 ### To run the prog:
 1. Create venv
 2. Install packs in req.txt
-3. Run the classify_cnt.py file
+3. Run the get_analyze_plate.py file
 
 
 

@@ -26,17 +26,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 model = keras.models.load_model(os.path.join(BASE_DIR,'keyplates_classifier.keras'))
 
-PROB = 0.1
-
 class_names = ['key_plates', 'other']
 DIM = (224,224)
 
-
-SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/unit_number.xlsx')
+SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/unit_number.xlsx') # where to save unit numbers
 SHEET = 'Unit Number Info'
 
-
-PYTHON_PATH = 'C:/Python39/python.exe' #os.path.join(BASE_DIR,'CRAFT/venv/Scripts/python.exe')
+PYTHON_PATH = os.path.join(BASE_DIR,'CRAFT/venv/Scripts/python.exe')
 
 
 CRAFT_PATH = os.path.join(BASE_DIR,"CRAFT/test.py")
@@ -44,7 +40,7 @@ CRAFT_MODEL_PATH = os.path.join(BASE_DIR,"CRAFT/craft_mlt_25k.pth")
 
 data = os.path.join(BASE_DIR, 'sample')
 
-image_num = 0
+IMAGE_NUM = 0
 root = 72
 
 cut_pixels = 10 # cut image for all directions by 10 pixels
@@ -245,181 +241,177 @@ def create_folder_if_not_exists(folder_path):
         print(f"Folder already exists: {folder_path}")
 
 
+
+
+def main():
+    global IMAGE_NUM
+
+    """
+
+    for each image:
+    prepare it for contours extraction,
+    extract contours
+    classify keyplates among them
+    run craft on keyplates
+    store the results
+    """
+
+    clear_sheet(SAVE_LOC,SHEET) # make sure excel file is empty
+
+    for image_path_original in os.listdir(data):
+
+        path = os.path.join(data, image_path_original)
+        image_original = cv2.imread(path)
+
+        height, width = image_original.shape[:2]
+
+        new_height = height - 2 * cut_pixels
+        new_width = width - 2 * cut_pixels
+
+        image_original = image_original[cut_pixels:new_height + cut_pixels, cut_pixels:new_width + cut_pixels]
+
+        gray = cv2.cvtColor(image_original, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+
+        _, thresh = cv2.threshold(blurred, 220, 255, cv2.THRESH_BINARY)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_KCOS)
+
+
+        sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True) # sort by area and flter out the biggest since its the image itself
+        contours = sorted_contours[1:]
+
+        filtered_cnt_by_area = []
+
+        for contour in contours:
+            area = cv2.contourArea(contour)
+
+            if 100 <= area <= 35000:
+                filtered_cnt_by_area.append(contour)
+
+        rectangles = []
+
+        for contour in filtered_cnt_by_area:
+            x,y,w,h = cv2.boundingRect(contour)
+            rectangles.append([x,y,x+w,y,x+w,y+h,x,y+h])
+
+        merged_rectangles = merge_intersecting_rectangles(rectangles,n_iterations=10)
+        merged_rectangles = convert_to_cnt(merged_rectangles)
+        merged_contours = merged_rectangles
+
+
+        merged_contours = [cnt for cnt in merged_contours if cv2.contourArea(cnt) > 3000]
+
+
+        count_images = 0
+        count_txt = 0
+
+        # store coords of the boxes and contours to the appropriate folders
+
+        for cnt in merged_contours:
+
+            x, y, w, h = cv2.boundingRect(cnt)
+            image_rect = image_original[y:y+h, x:x+w]
+
+            txt_file_path = f'coords/rect_coordinates_{count_txt}.txt'
+
+            with open(txt_file_path, 'w') as txt_file:
+                txt_file.write(f'{x},{y},{w},{h}')
+
+
+            # root is the number for current program run
+            # image num is number of image
+            #count_images is number of countour of the partilucar image
+
+            # all this to make each image fraction name unique
+
+            cv2.imwrite(f'tmp_rects/tmp_rect_{root}_{IMAGE_NUM}_{count_images}.jpg', image_rect)
+
+            count_images += 1
+            count_txt += 1
+
+
+        IMAGE_NUM += 1
+
+        images_rect = [os.path.join('tmp_rects', image) for image in os.listdir('tmp_rects')]
+        coords_rect = [os.path.join('coords', coord) for coord in os.listdir('coords')]
+
+
+        paths = list(zip(coords_rect,images_rect))
+
+        filtered_coords = []
+
+        threshold = 0.5
+
+        for coord,image_path in paths:
+
+            img = Image.open(image_path)
+            img = enhance_and_reshape(img, 7, DIM) # prep
+            img_array = np.array(img)
+            img = tf.expand_dims(img, axis=0)
+
+            prediction = model.predict(img)[0][0]
+
+            if prediction>threshold:
+                predicted_class_index = 1
+            else:
+                predicted_class_index = 0
+
+            predicted_class = class_names[predicted_class_index]
+
+
+            print(prediction)
+            print(predicted_class_index)
+            print(predicted_class)
+
+
+            if predicted_class_index == 0: # means keyplate
+
+                with open(coord, 'r') as txt_file:
+                    line = txt_file.readlines()
+                    line = line[0]
+                    line = line.split(',')
+                    line = list(map(int,line))
+                    filtered_coords.append(line+[prediction])
+
+
+
+
+        key_plates = sorted(filtered_coords,key=lambda x : x[4], reverse=False)[::]
+
+        contour_image = image_original.copy()
+
+        count = 0
+
+        test_folder = 'test'
+
+        # copy key plates to test folder
+
+        for x, y, w, h,p in key_plates:
+            cv2.rectangle(contour_image, (x, y), (x + w, y + h), (0, 255, 0), 3)
+            plate = image_original[y:y+h,x:x+w]
+
+            path = f'{count}_{image_path_original}'
+            path = os.path.join(test_folder,path)
+
+
+            cv2.imwrite(path, plate)
+            count+= 1
+
+        run_craft()
+
+        plt.imshow(contour_image)
+        plt.show()
+
+        delete_files_in_directory("tmp_rects")
+        delete_files_in_directory("coords")
+        delete_files_in_directory("test")
+
+
+
 create_folder_if_not_exists('coords')
 create_folder_if_not_exists('tmp_rects')
 create_folder_if_not_exists('test')
 
 
-clear_sheet(SAVE_LOC,SHEET) # make sure excel file is empty
-
-for image_path_original in os.listdir(data):
-
-
-    path = os.path.join(data, image_path_original)
-    image_original = cv2.imread(path)
-
-    height, width = image_original.shape[:2]
-
-    new_height = height - 2 * cut_pixels
-    new_width = width - 2 * cut_pixels
-
-    image_original = image_original[cut_pixels:new_height + cut_pixels, cut_pixels:new_width + cut_pixels]
-
-    gray = cv2.cvtColor(image_original, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (3, 3), 0)
-
-    _, thresh = cv2.threshold(blurred, 220, 255, cv2.THRESH_BINARY)
-
-    #plt.imshow(thresh)
-    #plt.show()
-
-    contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_KCOS)
-
-    c = image_original.copy()
-    cv2.drawContours(c, contours, -1, (0, 255, 0), 3)
-
-    #plt.imshow(c)
-    #plt.show()
-
-
-    sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True) # sort by area and flter out the biggest since its the image itself
-    contours = sorted_contours[1:]
-
-    filtered_cnts_by_area = []
-
-    for contour in contours:
-        area = cv2.contourArea(contour)
-
-        if 100 <= area <= 35000:
-            filtered_cnts_by_area.append(contour)
-
-    contours = filtered_cnts_by_area
-
-
-    c = image_original.copy()
-
-    for cnt in contours:
-        x, y, w, h = cv2.boundingRect(cnt)
-        cv2.rectangle(c, (x, y), (x + w, y + h), (0, 255, 0), 3)
-
-    #plt.imshow(c)
-    #plt.show()
-
-    rectangles = []
-
-    for contour in contours:
-        x,y,w,h = cv2.boundingRect(contour)
-        rectangles.append([x,y,x+w,y,x+w,y+h,x,y+h])
-
-    merged_rectangles = merge_intersecting_rectangles(rectangles,n_iterations=10)
-    merged_rectangles = convert_to_cnt(merged_rectangles)
-    merged_contours = merged_rectangles
-
-
-    merged_contours = [cnt for cnt in merged_contours if cv2.contourArea(cnt) > 3000]
-
-    c = image_original.copy()
-
-    for cnt in merged_contours:
-        x, y, w, h = cv2.boundingRect(cnt)
-        cv2.rectangle(c, (x, y), (x + w, y + h), (0, 255, 0), 3)
-
-    #plt.imshow(c)
-    #plt.show()
-
-    count_images = 0
-    count_txt = 0
-
-    # store coords of the boxes and contours to the appropriate folders
-
-    for cnt in merged_contours:
-
-        x, y, w, h = cv2.boundingRect(cnt)
-        image_rect = image_original[y:y+h, x:x+w]
-
-        txt_file_path = f'coords/rect_coordinates_{count_txt}.txt'
-
-        with open(txt_file_path, 'w') as txt_file:
-            txt_file.write(f'{x},{y},{w},{h}')
-
-        cv2.imwrite(f'tmp_rects/tmp_rect_{root}_{image_num}_{count_images}.jpg', image_rect)
-
-        count_images += 1
-        count_txt += 1
-
-
-    image_num += 1
-
-    images_rect = [os.path.join('tmp_rects', image) for image in os.listdir('tmp_rects')]
-    coords_rect = [os.path.join('coords', coord) for coord in os.listdir('coords')]
-
-
-    paths = list(zip(coords_rect,images_rect))
-
-    filtered_coords = []
-
-    threshold = 0.5
-
-    for coord,image_path in paths:
-
-        img = Image.open(image_path)
-        img = enhance_and_reshape(img, 7, DIM) # prep
-        img_array = np.array(img)
-        img = tf.expand_dims(img, axis=0)
-
-        prediction = model.predict(img)[0][0]
-
-        if prediction>threshold:
-            predicted_class_index = 1
-        else:
-            predicted_class_index = 0
-
-        predicted_class = class_names[predicted_class_index]
-
-
-        print(prediction)
-        print(predicted_class_index)
-        print(predicted_class)
-
-
-        if predicted_class_index == 0:
-
-            with open(coord, 'r') as txt_file:
-                line = txt_file.readlines()
-                line = line[0]
-                line = line.split(',')
-                line = list(map(int,line))
-                filtered_coords.append(line+[prediction])
-
-
-
-
-    key_plates = sorted(filtered_coords,key=lambda x : x[4], reverse=False)[::]
-
-    contour_image = image_original.copy()
-
-    count = 0
-
-    test_folder = 'test'
-
-    # copy key plates to test folder
-
-    for x, y, w, h,p in key_plates:
-        cv2.rectangle(contour_image, (x, y), (x + w, y + h), (0, 255, 0), 3)
-        plate = image_original[y:y+h,x:x+w]
-
-        path = f'{count}_{image_path_original}'
-        path = os.path.join(test_folder,path)
-
-
-        cv2.imwrite(path, plate)
-        count+= 1
-
-    run_craft()
-
-    plt.imshow(contour_image)
-    plt.show()
-
-    delete_files_in_directory("tmp_rects")
-    delete_files_in_directory("coords")
-    delete_files_in_directory("test")
+if __name__ == '__main__':
+    main()
