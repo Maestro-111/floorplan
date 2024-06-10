@@ -11,7 +11,7 @@ def encode_image(image_path):
 
 
 
-def start_conversation(image_scr, prompt, api_key):
+def get_direction(image_scr, prompt, api_key):
 
     image_path1 = 'images/train/pdf_floor_plan_1_0.jpg.'
     image_path2 = 'images/train/pdf_floor_plan_1_1.jpg.'
@@ -130,52 +130,6 @@ def start_conversation(image_scr, prompt, api_key):
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
     return response
-
-
-
-
-def get_direction(image_src,prompt,api_key,conversation_id):
-
-
-    base64_image = encode_image(image_src)  # target
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}"
-    }
-
-    payload = {
-        "model": "gpt-4o",
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": prompt
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{base64_image}"
-                        }
-                    }
-                ]
-            }
-        ],
-        "conversation_id": conversation_id,
-        "max_tokens": 300
-    }
-
-    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
-    print(response.json())
-    return response
-
-
-
-
-
-
 
 
 

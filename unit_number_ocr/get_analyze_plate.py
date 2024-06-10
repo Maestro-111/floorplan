@@ -18,7 +18,7 @@ import openpyxl
 from pathlib import Path
 import os
 
-from direction_detection import get_direction, start_conversation
+from direction_detection import get_direction
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -417,7 +417,7 @@ def main():
 
             api_key = os.environ.get("OPENAI_API_KEY")
 
-            response = start_conversation(full_initial_image_path, populated_template, api_key)
+            response = get_direction(full_initial_image_path, populated_template, api_key)
             response = response.json()['choices'][0]['message']['content']
 
             print("########\n")
