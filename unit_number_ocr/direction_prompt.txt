@@ -24,4 +24,5 @@ For the 10th image unit numbers are 09 and direction for 09 west.
           
 For the last, 11th, image unit number are {}.
           
-Identify the direction of the unit numbers for the 11th image. Give you response STRICTLY in this format, unit number:direction.
+Identify the direction of the unit numbers for the 11th image. 
+Give you response in one line using comma as a delimiter, STRICTLY in this format, unit number:direction.

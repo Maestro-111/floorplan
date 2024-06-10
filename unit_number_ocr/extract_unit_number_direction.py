@@ -19,24 +19,28 @@ from pathlib import Path
 import os
 
 from direction_detection import get_direction
+import pandas as pd
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 model = keras.models.load_model(os.path.join(BASE_DIR,'keyplates_classifier.keras'))
 
 class_names = ['key_plates', 'other']
 DIM = (224,224)
 
-SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/unit_number.xlsx') # where to save unit numbers
-SHEET = 'Unit Number Info'
+SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/unit_number_direction.xlsx') # where to save unit numbers
+
+UNIT_SHEET = 'Unit Number Info'
+DIRECTION_SHEET = 'Direction Info'
 
 PYTHON_PATH = os.path.join(BASE_DIR,'CRAFT/venv/Scripts/python.exe')
 UNIT_NUMBER_SAVE_LOC = os.path.join(BASE_DIR,'unit_number_ocr/unit_numbers.txt')
 
-CONVERSATION_ID = None
+DIRECTION_SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/direction.xlsx')
+
+
 
 CRAFT_PATH = os.path.join(BASE_DIR,"CRAFT/test.py")
 CRAFT_MODEL_PATH = os.path.join(BASE_DIR,"CRAFT/craft_mlt_25k.pth")
@@ -50,6 +54,7 @@ cut_pixels = 10 # cut image for all directions by 10 pixels
 
 
 def clear_sheet(excel_file, sheet_name):
+
     """
     Clearing excel file in unit testing folder
     """
@@ -72,6 +77,15 @@ def clear_sheet(excel_file, sheet_name):
 
 
 def run_craft():
+
+    """
+
+    Run craft module to extract and save unit numbers in 2 locations:
+
+    1) for unit testing
+    2) in this folder to paste unit numbers into the direction template
+
+    """
 
     command = [PYTHON_PATH, CRAFT_PATH, "--trained_model", CRAFT_MODEL_PATH,
                "--unit_number_save_loc",UNIT_NUMBER_SAVE_LOC,
@@ -259,7 +273,8 @@ def main():
     store the results
     """
 
-    clear_sheet(SAVE_LOC,SHEET) # make sure excel file is empty
+    clear_sheet(SAVE_LOC,UNIT_SHEET) # make sure excel file is empty
+    clear_sheet(SAVE_LOC, DIRECTION_SHEET)
 
     for initial_image_path in os.listdir(data):
 
@@ -393,7 +408,6 @@ def main():
             cv2.imwrite(path, plate)
             count+= 1
 
-
         run_craft()
 
         plt.imshow(contour_image)
@@ -411,9 +425,11 @@ def main():
                     line = line.split(";")
                     unit_numbers.extend(line)
 
+                unit_numbers = ','.join(unit_numbers)
+
             populated_template = direction_template.format(unit_numbers)
 
-            print(unit_numbers)
+            print("Unit Numbers: ", unit_numbers)
 
             api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -424,6 +440,31 @@ def main():
             print(response)
             print("########\n")
 
+            unit_number_direction = response.split(",")
+            unit_number_direction = list(map(lambda x: x.split(':'), unit_number_direction))
+
+            unit_name = []
+            unit_direction = []
+            image_name = []
+
+            for unit, direction in unit_number_direction:
+
+                unit_name.append(unit)
+                unit_direction.append(direction)
+                image_name.append(initial_image_path)
+
+            matrix = np.array([unit_name, unit_direction, image_name])
+            new_df = pd.DataFrame(matrix.transpose(), columns=['Unit Number', 'Direction', 'Image Name'])
+
+            print(new_df)
+
+            existing_df = pd.read_excel(SAVE_LOC, sheet_name=DIRECTION_SHEET)
+
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+
+            with pd.ExcelWriter(SAVE_LOC, mode='a', engine='openpyxl', if_sheet_exists='overlay') as writer:
+                combined_df.to_excel(writer, index=False, sheet_name=DIRECTION_SHEET)
+
         except FileNotFoundError as e:
             print(e)
             print("Unit numbers were not saved")
@@ -432,9 +473,9 @@ def main():
             with open(UNIT_NUMBER_SAVE_LOC,'w') as f:
                 f.write(' ')
 
-        delete_files_in_directory("tmp_rects")
-        delete_files_in_directory("coords")
-        delete_files_in_directory("test")
+            delete_files_in_directory("tmp_rects")
+            delete_files_in_directory("coords")
+            delete_files_in_directory("test")
 
 
 create_folder_if_not_exists('coords')
