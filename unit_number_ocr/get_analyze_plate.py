@@ -1,5 +1,4 @@
 
-
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
@@ -19,6 +18,8 @@ import openpyxl
 from pathlib import Path
 import os
 
+from direction_detection import get_direction, start_conversation
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
@@ -33,7 +34,9 @@ SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/unit_number.xlsx') # where to sav
 SHEET = 'Unit Number Info'
 
 PYTHON_PATH = os.path.join(BASE_DIR,'CRAFT/venv/Scripts/python.exe')
+UNIT_NUMBER_SAVE_LOC = os.path.join(BASE_DIR,'unit_number_ocr/unit_numbers.txt')
 
+CONVERSATION_ID = None
 
 CRAFT_PATH = os.path.join(BASE_DIR,"CRAFT/test.py")
 CRAFT_MODEL_PATH = os.path.join(BASE_DIR,"CRAFT/craft_mlt_25k.pth")
@@ -71,7 +74,8 @@ def clear_sheet(excel_file, sheet_name):
 def run_craft():
 
     command = [PYTHON_PATH, CRAFT_PATH, "--trained_model", CRAFT_MODEL_PATH,
-               '--text_threshold','0.05','--low_text','0.05','--link_threshold','0.5','--key_plates','True','--key_plates_save_path',f'{SAVE_LOC}']
+               "--unit_number_save_loc",UNIT_NUMBER_SAVE_LOC,
+               '--text_threshold','0.05','--low_text','0.05','--link_threshold','0.5','--key_plates','True','--unit_testing_save_path',f'{SAVE_LOC}']
     subprocess.run(command)
 
 def delete_files_in_directory(directory_path):
@@ -241,10 +245,9 @@ def create_folder_if_not_exists(folder_path):
         print(f"Folder already exists: {folder_path}")
 
 
-
-
 def main():
-    global IMAGE_NUM
+
+    global IMAGE_NUM,CONVERSATION_ID
 
     """
 
@@ -258,11 +261,12 @@ def main():
 
     clear_sheet(SAVE_LOC,SHEET) # make sure excel file is empty
 
-    for image_path_original in os.listdir(data):
+    for initial_image_path in os.listdir(data):
 
-        path = os.path.join(data, image_path_original)
+        path = os.path.join(data, initial_image_path)
+        full_initial_image_path = os.path.join(data, initial_image_path)
+
         image_original = cv2.imread(path)
-
         height, width = image_original.shape[:2]
 
         new_height = height - 2 * cut_pixels
@@ -298,9 +302,7 @@ def main():
         merged_rectangles = convert_to_cnt(merged_rectangles)
         merged_contours = merged_rectangles
 
-
         merged_contours = [cnt for cnt in merged_contours if cv2.contourArea(cnt) > 3000]
-
 
         count_images = 0
         count_txt = 0
@@ -342,9 +344,9 @@ def main():
 
         threshold = 0.5
 
-        for coord,image_path in paths:
+        for coord,path in paths:
 
-            img = Image.open(image_path)
+            img = Image.open(path)
             img = enhance_and_reshape(img, 7, DIM) # prep
             img_array = np.array(img)
             img = tf.expand_dims(img, axis=0)
@@ -358,11 +360,9 @@ def main():
 
             predicted_class = class_names[predicted_class_index]
 
-
             print(prediction)
             print(predicted_class_index)
             print(predicted_class)
-
 
             if predicted_class_index == 0: # means keyplate
 
@@ -374,12 +374,9 @@ def main():
                     filtered_coords.append(line+[prediction])
 
 
-
-
         key_plates = sorted(filtered_coords,key=lambda x : x[4], reverse=False)[::]
 
         contour_image = image_original.copy()
-
         count = 0
 
         test_folder = 'test'
@@ -390,22 +387,54 @@ def main():
             cv2.rectangle(contour_image, (x, y), (x + w, y + h), (0, 255, 0), 3)
             plate = image_original[y:y+h,x:x+w]
 
-            path = f'{count}_{image_path_original}'
+            path = f'{count}_{initial_image_path}'
             path = os.path.join(test_folder,path)
-
 
             cv2.imwrite(path, plate)
             count+= 1
+
 
         run_craft()
 
         plt.imshow(contour_image)
         plt.show()
 
+        try:
+
+            with open('direction_prompt.txt', 'r') as file:
+                direction_template = file.read()
+
+            with open(UNIT_NUMBER_SAVE_LOC,'r') as f: # unpack saved unit numbers for the image
+
+                unit_numbers = []
+                for line in f:
+                    line = line.split(";")
+                    unit_numbers.extend(line)
+
+            populated_template = direction_template.format(unit_numbers)
+
+            print(unit_numbers)
+
+            api_key = os.environ.get("OPENAI_API_KEY")
+
+            response = start_conversation(full_initial_image_path, populated_template, api_key)
+            response = response.json()['choices'][0]['message']['content']
+
+            print("########\n")
+            print(response)
+            print("########\n")
+
+        except FileNotFoundError as e:
+            print(e)
+            print("Unit numbers were not saved")
+
+        finally:
+            with open(UNIT_NUMBER_SAVE_LOC,'w') as f:
+                f.write(' ')
+
         delete_files_in_directory("tmp_rects")
         delete_files_in_directory("coords")
         delete_files_in_directory("test")
-
 
 
 create_folder_if_not_exists('coords')

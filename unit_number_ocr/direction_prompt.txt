@@ -1,0 +1,27 @@
+You are provided with a floor plan diagram of a building. The diagram includes:
+          
+1)A key plate showing the layout of the apartments on each floor. For each key plate we have unit numbers, which are numbers in the colored section.
+2) An arrow indicating the north direction. 
+          
+We are interested in identifying directions of unit numbers with respect to the arrow.
+          
+For example, if unit number "06" is in the top part of the key plate and the north arrow points upwards, 
+then unit "06" is in the northern direction of the building.
+          
+We have 11 images attached. 10 of them are examples and we need to extract unit number directions for the last image. 
+          
+For the 1st image unit number are 06 and direction of 06 is north.
+For the 2nd image unit numbers are 04,03,10 and direction of 04 and 03 is west, of 10 is east.
+For the 3rd imagee unit numbers are 04 and direction of 04 is north.
+For the 4th image unit numbers are o4 and direction of 04 is south.
+For the 5th image unit numbers are 09 and 09 and direction for 09 and 09 is north-west.
+For the 6th image unit numbers are 01 and 01 and direction for 01 and 01 is north-west.
+For the 7th image unit numbers are 02 and 02 and direction for 02 and 02 is north-east.
+For the 8th image unit numbers are 04,05,06,07,08, and 09 
+and direction for 04 and 05 is north-west, for 06 and 07 direction is north and for 08 and 09 direction is north-east.
+For the 9th image unit numbers are 08 and direction for 08 is north-west.
+For the 10th image unit numbers are 09 and direction for 09 west.
+          
+For the last, 11th, image unit number are {}.
+          
+Identify the direction of the unit numbers for the 11th image. Give you response STRICTLY in this format, unit number:direction.
