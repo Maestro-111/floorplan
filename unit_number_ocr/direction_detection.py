@@ -23,7 +23,12 @@ def get_direction(image_scr, prompt, api_key):
     image_path8 = 'images/train/pdf_floor_plan_42_0.jpg.'
     image_path9 = 'images/train/pdf_floor_plan_1_6.jpg.'
     image_path10 = 'images/train/pdf_floor_plan_1_10.jpg.'
-    image_path11 = image_scr
+    image_path11 = 'images/train/pdf_floor_plan_42_7.jpg.'
+    image_path12 = 'images/train/pdf_floor_plan_42_8.jpg.'
+
+
+
+    image_path13 = image_scr
 
     base64_image1 = encode_image(image_path1)
     base64_image2 = encode_image(image_path2)
@@ -36,6 +41,9 @@ def get_direction(image_scr, prompt, api_key):
     base64_image9 = encode_image(image_path9)
     base64_image10 = encode_image(image_path10)
     base64_image11 = encode_image(image_path11)
+    base64_image12 = encode_image(image_path12)
+
+    base64_image13 = encode_image(image_path13)
 
 
     headers = {
@@ -118,6 +126,18 @@ def get_direction(image_scr, prompt, api_key):
                         "type": "image_url",
                         "image_url": {
                             "url": f"data:image/jpeg;base64,{base64_image11}"
+                        }
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image12}"
+                        }
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image13}"
                         }
                     }
                 ]

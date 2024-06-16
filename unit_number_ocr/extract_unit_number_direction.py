@@ -269,8 +269,9 @@ def main():
     prepare it for contours extraction,
     extract contours
     classify keyplates among them
-    run craft on keyplates
-    store the results
+    run craft on keyplates, save 2 things: unit number in unit testing folder and unit numbers in txt file in this folder
+    aply gpt prompt with saved  unit number in txt file to get directions
+    store the directions results in unit testing folder
     """
 
     clear_sheet(SAVE_LOC,UNIT_SHEET) # make sure excel file is empty
@@ -468,6 +469,12 @@ def main():
         except FileNotFoundError as e:
             print(e)
             print("Unit numbers were not saved")
+            print("Wrong Path to a file occured")
+
+        except KeyError as e:
+            print(e)
+            print("Unit numbers were not saved")
+            print("GPT response is not correct")
 
         finally:
             with open(UNIT_NUMBER_SAVE_LOC,'w') as f:

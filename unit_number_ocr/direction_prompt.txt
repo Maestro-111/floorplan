@@ -8,7 +8,7 @@ We are interested in identifying directions of unit numbers with respect to the 
 For example, if unit number "06" is in the top part of the key plate and the north arrow points upwards, 
 then unit "06" is in the northern direction of the building.
           
-We have 11 images attached. 10 of them are examples and we need to extract unit number directions for the last image. 
+We have 13 images attached. 12 of them are examples and we need to extract unit number directions for the last image. 
           
 For the 1st image unit number are 06 and direction of 06 is north.
 For the 2nd image unit numbers are 04,03,10 and direction of 04 and 03 is west, of 10 is east.
@@ -20,9 +20,12 @@ For the 7th image unit numbers are 02 and 02 and direction for 02 and 02 is nort
 For the 8th image unit numbers are 04,05,06,07,08, and 09 
 and direction for 04 and 05 is north-west, for 06 and 07 direction is north and for 08 and 09 direction is north-east.
 For the 9th image unit numbers are 08 and direction for 08 is north-west.
-For the 10th image unit numbers are 09 and direction for 09 west.
+For the 10th image unit numbers are 09 and direction for 09 is west.
+For the 11th image unit numbers are 10 and direction for 09 is north-east.
+For the 12th image unit numbers are 05 and direction for 05 is south-west.
+
           
-For the last, 11th, image unit number are {}.
+For the last, 13th, image unit number are {}.
           
-Identify the direction of the unit numbers for the 11th image. 
+Identify the direction of the unit numbers for the 13th image. 
 Give you response in one line using comma as a delimiter, STRICTLY in this format, unit number:direction.
