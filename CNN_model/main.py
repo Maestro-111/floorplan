@@ -20,12 +20,15 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 
 
-TARGET_NAME = 'key_plates'
+TARGET_NAME = 'directions'
 OPPOSITE_NAME = 'other'
+
+CLASS_NAMES = [TARGET_NAME,OPPOSITE_NAME]
+
 DIM = (224,224,3)
 FACTOR = 7
-SOURCE = 'C:\metadata_craft1'
-MODEL_NAME = 'keyplates_classifier'
+SOURCE = 'C:\directions_data'
+MODEL_NAME = 'directions_classifier'
 EPOCHS = 20
 BATCH = 32
 
@@ -36,8 +39,8 @@ def process_data(source:str,aug:bool,factor=6):
     sharp_and_res(data_dir = "dataset", factor=factor)
 
     if aug:
-        augementation(f'dataset/train/{TARGET_NAME}', 4, 'surveys')
-        augementation(f'dataset/validation/{TARGET_NAME}', 3, 'surveys')
+        augementation(f'dataset/train/{TARGET_NAME}', 15, 'surveys')
+        augementation(f'dataset/validation/{TARGET_NAME}', 10, 'surveys')
 
     print("Data set has been created\n")
 
@@ -51,15 +54,19 @@ def dataset(train_path,val_path,test_path,dim:tuple,color_mode:str,batch:int):
     return train_dataset, validation_dataset, test_dataset, class_names, num_classes
 
 
-def delete_data(classes=['key_plates', 'other']):
+def delete_data():
     for type_dir in ['train', 'test', 'validation']:
-        for type_image in classes:
+        for type_image in CLASS_NAMES:
             path = f'dataset/{type_dir}/{type_image}'
             delete_files_in_directory(directory_path=path)
 
 
 
 def pipeline(delete=False,process=False,aug=False,train_test=False):
+
+    """
+    execute training/testing
+    """
 
     if delete:
         delete_data()
@@ -120,12 +127,7 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
     print("Best Hyperparameters:")
     print(best_hyperparameters.values)
 
-
-
     best_model_for_training = CNN(num_classes, DIM, TARGET_NAME)
-
-    #best_model_for_training.reserve_model()
-
     best_model_for_training.cnn_tuner(best_hyperparameters,save_model=True)
 
     history = best_model_for_training.train(train_dataset,validation_dataset,batch_size=BATCH,epochs=EPOCHS)
@@ -137,5 +139,5 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
     best_model_for_training.save(f'C:/floorplan/{MODEL_NAME}.keras')
 
 
-pipeline(delete=True,process=True,aug=True,train_test=True)
+pipeline(delete=False,process=True,aug=True,train_test=True)
 

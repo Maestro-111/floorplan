@@ -274,6 +274,10 @@ class CNN(neural_net_mixin):
 
     def reserve_model(self):
 
+        """
+        holds the same architecture as cnn_tuner. Used in case we want to ignore hyper search and use 'raw' model.
+        """
+
         img_input = layers.Input(shape=self.input_shape)
 
         x = layers.Rescaling(1.0 / 255)(img_input)

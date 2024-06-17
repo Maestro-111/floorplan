@@ -43,8 +43,10 @@ FACTOR = 5 # factor for image enhance - more it is, more sharppened the image is
 LIMIT = 7 # limit for CLAHE prepocessing for survey images - more it is the more drastic changes are going to be applied
 HEIGHT = 224
 WIDTH = 224
-MODEL_PATH_PREDS = 'C:/floorplan/floorplan_classifier.keras'
-MODEL_PATH_SAVE = 'C:/floorplan/floorplan_classifier.keras'
+
+
+MODEL_PATH_PREDS = 'C:/floorplan/floorplan_classifier.keras' # what model to use when making preds
+MODEL_PATH_SAVE = 'C:/floorplan/floorplan_classifier.keras' # where to save the model after training
 
 
 class CustomException(Exception):

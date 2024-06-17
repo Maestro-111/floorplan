@@ -23,10 +23,15 @@ import pandas as pd
 BASE_DIR = Path(__file__).resolve().parent.parent
 DIM = (224,224)
 
+model = keras.models.load_model(os.path.join(BASE_DIR,'directions_classifier.keras'))
 data = os.path.join(BASE_DIR, 'sample')
 
+class_names = ['directions', 'other']
+
+THRESHOLD = 0.5
+
 IMAGE_NUM = 0
-root = 1
+root = 4
 
 
 def merge_intersecting_rectangles(rectangles, n_iterations):
@@ -109,6 +114,37 @@ def create_folder_if_not_exists(folder_path):
 
 
 
+def enhance_and_reshape(img,factor,s): # image_enhacer
+
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+
+    img = img.resize(s, Image.LANCZOS)
+
+    enhancer = ImageEnhance.Sharpness(img)
+    sharpened_img = enhancer.enhance(factor)  # Adjust the enhancement factor as needed
+
+    return sharpened_img
+
+
+def delete_files_in_directory(directory_path):
+    try:
+        # List all files in the specified directory
+        files = os.listdir(directory_path)
+        # Iterate through each file and delete them
+        for file_name in files:
+            file_path = os.path.join(directory_path, file_name)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                print(f"Deleted: {file_path}")
+
+        print("All files deleted successfully.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+
 def main():
 
     global IMAGE_NUM
@@ -173,19 +209,59 @@ def main():
             with open(txt_file_path, 'w') as txt_file:
                 txt_file.write(f'{x},{y},{w},{h}')
 
-
-            # root is the number for current program run
-            # image num is number of image
-            #count_images is number of countour of the partilucar image
-
-            # all this to make each image fraction name unique
-
             cv2.imwrite(f'tmp_rects/tmp_rect_{root}_{IMAGE_NUM}_{count_images}.jpg', image_rect)
 
             count_images += 1
             count_txt += 1
 
         IMAGE_NUM += 1
+
+        images_rect = [os.path.join('tmp_rects', image) for image in os.listdir('tmp_rects')]
+        coords_rect = [os.path.join('coords', coord) for coord in os.listdir('coords')]
+
+        paths = list(zip(coords_rect, images_rect))
+        directions = []
+
+        contour_image = image_original.copy()
+
+        for coord,path in paths:
+
+            img = Image.open(path)
+            img = enhance_and_reshape(img, 7, DIM) # prep
+            img_array = np.array(img)
+            img = tf.expand_dims(img, axis=0)
+
+            prediction = model.predict(img)[0][0]
+
+            if prediction>THRESHOLD:
+                predicted_class_index = 1
+            else:
+                predicted_class_index = 0
+
+            predicted_class = class_names[predicted_class_index]
+
+            print(prediction)
+            print(predicted_class_index)
+            print(predicted_class)
+
+            if predicted_class_index == 0: # means keyplate
+
+                with open(coord, 'r') as txt_file:
+                    line = txt_file.readlines()
+                    line = line[0]
+                    line = line.split(',')
+                    line = list(map(int,line))
+                    directions.append(line+[prediction])
+
+        for x, y, w, h,p in directions:
+            cv2.rectangle(contour_image, (x, y), (x + w, y + h), (0, 255, 0), 3)
+
+        plt.imshow(contour_image)
+        plt.show()
+
+        delete_files_in_directory("tmp_rects")
+        delete_files_in_directory("coords")
+        delete_files_in_directory("test")
 
 
 create_folder_if_not_exists('coords')
