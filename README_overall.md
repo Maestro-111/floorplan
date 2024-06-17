@@ -118,15 +118,15 @@ In this project we slightly modified CRAFT. As a default it produces 3 files for
 
 1. Changed version of the passed image which includes identified regions
 
-<img width="1000" alt="teaser" src="./figures/figure2.png">
+<img width="1000" alt="teaser" src="./figures/figure2.PNG">
 
 2. txt file which stores the coords of each box
 
-<img width="1000" alt="teaser" src="./figures/figure1.png">
+<img width="1000" alt="teaser" src="./figures/figure1.PNG">
 
 3. Heat map for each box (not used by us)
 
-<img width="1000" alt="teaser" src="./figures/figure3.png">
+<img width="1000" alt="teaser" src="./figures/figure3.PNG">
 
 Our modified version of CRAFT, in addition to above described features, can do the following:
 
