@@ -7,7 +7,7 @@ import pandas as pd
 from collections import defaultdict
 
 
-from merge_conts import read_coords
+from room_floor_area_ocr import read_coords
 
 import pytesseract
 

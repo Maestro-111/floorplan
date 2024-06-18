@@ -40,6 +40,8 @@ UNIT_NUMBER_SAVE_LOC = os.path.join(BASE_DIR,'unit_number_ocr/unit_numbers.txt')
 
 DIRECTION_SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/direction.xlsx')
 
+THRESHOLD = 0.5
+
 
 
 CRAFT_PATH = os.path.join(BASE_DIR,"CRAFT/test.py")
@@ -358,8 +360,6 @@ def main():
 
         filtered_coords = []
 
-        threshold = 0.5
-
         for coord,path in paths:
 
             img = Image.open(path)
@@ -369,7 +369,7 @@ def main():
 
             prediction = model.predict(img)[0][0]
 
-            if prediction>threshold:
+            if prediction>THRESHOLD:
                 predicted_class_index = 1
             else:
                 predicted_class_index = 0
