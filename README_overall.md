@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 3. Main.py calls a trained model, directions_classifier.keras, to classify key plate objects on the image. You can use CNN model module to train your own model, if needed. 
 Note, that current model is not accurate enough due to limited amount of labeled data. Retraining is highly recommended.
-4. Run main.py to classify direction sigh for the given image. Note that the results are not saved anywhere (yet).
+4. Run main.py to classify direction sigh for the given image. Also, the function will write the coords of the identified direction region to the txt file located in folder named direction_coords within base dir.
 
 ### Floorplan Classification
 

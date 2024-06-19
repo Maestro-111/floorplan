@@ -26,6 +26,8 @@ DIM = (224,224)
 model = keras.models.load_model(os.path.join(BASE_DIR,'directions_classifier.keras'))
 data = os.path.join(BASE_DIR, 'sample')
 
+OUTPUT_PATH = os.path.join(BASE_DIR,'direction_coords')
+
 class_names = ['directions', 'other']
 
 THRESHOLD = 0.5
@@ -256,6 +258,14 @@ def main():
         for x, y, w, h,p in directions:
             cv2.rectangle(contour_image, (x, y), (x + w, y + h), (0, 255, 0), 3)
 
+            p,suffix = initial_image_path.split(".")
+            coords_txt_path = os.path.join(OUTPUT_PATH, f"{p}.txt")
+
+            print(coords_txt_path)
+
+            with open(coords_txt_path, 'w') as f:
+                f.write(f"{x},{y},{w},{h}")
+
         plt.imshow(contour_image)
         plt.show()
 
@@ -264,9 +274,10 @@ def main():
         delete_files_in_directory("test")
 
 
-create_folder_if_not_exists('coords')
+create_folder_if_not_exists(OUTPUT_PATH)
 create_folder_if_not_exists('tmp_rects')
 create_folder_if_not_exists('test')
+create_folder_if_not_exists('coords')
 
 if __name__ == "__main__":
     main()
