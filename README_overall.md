@@ -27,6 +27,9 @@ Finally, sample folder contains the input images for Direction Classification, U
 ```
 python -m venv venv
 ```
+
+Please, use python 3.11 for this module.
+
 2. All required dependencies are listed in requirements.txt
 
 ```
@@ -43,6 +46,9 @@ Note, that current model is not accurate enough due to limited amount of labeled
 ```
 python -m venv venv
 ```
+
+Please, use python 3.11 for this module.
+
 2. All required dependencies are listed in requirements.txt
 
 ```
@@ -68,6 +74,10 @@ If you run with predict it will make predictions on new data. Note, that predict
 ```
 python -m venv venv
 ```
+
+Please, use python 3.11 for this module.
+
+
 2. All required dependencies are listed in requirements.txt
 
 ```
@@ -75,7 +85,8 @@ pip install -r requirements.txt
 ```
 
 3. Note that input images to main.py are coming from 'sample' folder. 
-4. Main.py calls CRAFT. The parameters to 'run_craft' function should not be changed. More info about CRAFT params in the CRAFT module sections.
+4. Main.py calls CRAFT. The parameters to 'run_craft' function should not be changed. 
+More info about CRAFT params in the CRAFT module sections (in particular you have to install their craft_mlt_25k.pth model).
 5. Main.py calls a trained model, keyplates_classifier.keras, to classify key plate objects on the image. You can use CNN model module to train your own model, if needed. 
 6. You can run main.py to save unit numbers and their directions for each image in unit_testing/unit_number_direction.xlsx file.
 
@@ -85,6 +96,10 @@ pip install -r requirements.txt
 ```
 python -m venv venv
 ```
+
+Please, use python 3.11 for this module.
+
+
 2. All required dependencies are listed in requirements.txt
 
 ```
@@ -104,6 +119,8 @@ This is a CRAFT package cloned from here:
 ```
 git clone https://github.com/clovaai/CRAFT-pytorch.git
 ```
+
+Please, use python 3.9 or lower for this module. (3.9 recommended)
 
 It's run via test.py (examples bellow).
 
@@ -153,7 +170,24 @@ https://github.com/clovaai/CRAFT-pytorch
 
 This module is not called/used anywhere. It is only to train CNN model to classify target object on the image.
 
-To run pipeline function in main.py (which starts training pipeline), you need to configure path to the labeled dataset, which is SOURCE var.
+1. Figure our virtual env for the module: 
+```
+python -m venv venv
+```
+
+Please, use python 3.11 for this module.
+
+
+2. All required dependencies are listed in requirements.txt
+
+```
+pip install -r requirements.txt
+```
+
+1.	You have to create a labeled dataset (see directions data or key plates data as an example). 
+2.	Open CNN model module (use python 3.11 to create venv).
+3.	Then, change values of 2 variables.  Set TARGET_NAME to the ‘directions’ or ‘key_plates.  Set SOURCE to the path to your labeled dataset.
+4.	Run main.py. It will create model.keras called MODEL_NAME in the CNN model directory (you can of course change that). 
 
 ### Unit Testing
 
