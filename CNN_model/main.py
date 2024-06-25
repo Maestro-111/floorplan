@@ -74,8 +74,8 @@ def delete_data():
 
             if folder not in CLASS_NAMES:
                 os.rmdir(os.path.join(path, folder))
-
-            delete_files_in_directory(directory_path=os.path.join(path,folder))
+            else:
+                delete_files_in_directory(directory_path=os.path.join(path,folder))
 
 
 def pipeline(delete=False,process=False,aug=False,train_test=False):
@@ -153,5 +153,5 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
     best_model_for_training.save(f'C:/floorplan/{MODEL_NAME}.{MODEL_SUFIX}')
 
 
-pipeline(delete=True,process=False,aug=False,train_test=False)
+pipeline(delete=True,process=True,aug=True,train_test=True)
 
