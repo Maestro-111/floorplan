@@ -1,3 +1,5 @@
+import os.path
+
 from data_prep import save_to_dataset
 from data_prep import delete_files_in_directory
 from data_prep import convert_to_gray
@@ -20,29 +22,35 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 
 
-TARGET_NAME = 'directions'
+TARGET_NAME = 'key_plates'
 OPPOSITE_NAME = 'other'
 
 CLASS_NAMES = [TARGET_NAME,OPPOSITE_NAME]
 
 DIM = (224,224,3)
 FACTOR = 7
-SOURCE = 'C:\directions_data'
-MODEL_NAME = 'directions_classifier'
+SOURCE = 'C:\metadata_craft1'
+MODEL_NAME = 'key_plates_new'
+MODEL_SUFIX = "keras"
+
 EPOCHS = 20
+GRID_EPOCHS = 15
 BATCH = 32
+
+dataset_loc = 'dataset'
+surveys = 'surveys'
 
 
 def process_data(source:str,aug:bool,factor=6):
 
-    save_to_dataset(data_dir=source)
-    sharp_and_res(data_dir = "dataset", factor=factor)
+    save_to_dataset(data_dir=source, dataset_dir=dataset_loc)
+    sharp_and_res(data_dir = dataset_loc, factor=factor)
 
     if aug:
-        augementation(f'dataset/train/{TARGET_NAME}', 15, 'surveys')
-        augementation(f'dataset/validation/{TARGET_NAME}', 10, 'surveys')
+        augementation(f'dataset/train/{TARGET_NAME}', 15, surveys)
+        augementation(f'dataset/validation/{TARGET_NAME}', 10, surveys)
 
-    print("Data set has been created\n")
+    print("Dataset has been created\n")
 
 
 def dataset(train_path,val_path,test_path,dim:tuple,color_mode:str,batch:int):
@@ -55,11 +63,19 @@ def dataset(train_path,val_path,test_path,dim:tuple,color_mode:str,batch:int):
 
 
 def delete_data():
-    for type_dir in ['train', 'test', 'validation']:
-        for type_image in CLASS_NAMES:
-            path = f'dataset/{type_dir}/{type_image}'
-            delete_files_in_directory(directory_path=path)
 
+    for type_dir in ['train', 'test', 'validation']:
+        path = os.path.join(dataset_loc,type_dir)
+
+        if not os.path.exists(path):
+            continue
+
+        for folder in os.listdir(path):
+
+            if folder not in CLASS_NAMES:
+                os.rmdir(os.path.join(path, folder))
+
+            delete_files_in_directory(directory_path=os.path.join(path,folder))
 
 
 def pipeline(delete=False,process=False,aug=False,train_test=False):
@@ -86,16 +102,14 @@ def pipeline(delete=False,process=False,aug=False,train_test=False):
             color_mode = 'rgb'
 
         train_dataset, validation_dataset, test_dataset, class_names, num_classes = dataset(
-            "dataset/train",
-            "dataset/validation",
-            "dataset/test",
+            f"{dataset_loc}/train",
+            f"{dataset_loc}/validation",
+            f"{dataset_loc}/test",
             (width,height),
             color_mode,
             BATCH)
 
-
         train_test_model_and_save(train_dataset, validation_dataset, test_dataset, class_names, num_classes)
-
 
 
 def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,class_names, num_classes):
@@ -117,7 +131,7 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
 
     print(tuner.search_space_summary())
 
-    tuner.search(train_dataset, epochs=15, validation_data=validation_dataset)
+    tuner.search(train_dataset, epochs=GRID_EPOCHS, validation_data=validation_dataset)
 
     print(tuner.results_summary())
 
@@ -136,8 +150,8 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
     best_model_for_training.plot_training_hist(history, '3-layers CNN', ['red', 'orange'], ['blue', 'green'])
     best_model_for_training.evaluate_model(test_dataset,class_names)
 
-    best_model_for_training.save(f'C:/floorplan/{MODEL_NAME}.keras')
+    best_model_for_training.save(f'C:/floorplan/{MODEL_NAME}.{MODEL_SUFIX}')
 
 
-pipeline(delete=False,process=True,aug=True,train_test=True)
+pipeline(delete=True,process=False,aug=False,train_test=False)
 
