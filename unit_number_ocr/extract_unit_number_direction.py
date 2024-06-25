@@ -414,75 +414,9 @@ def main():
         plt.imshow(contour_image)
         plt.show()
 
-        try:
-
-            with open('direction_prompt.txt', 'r') as file:
-                direction_template = file.read()
-
-            with open(UNIT_NUMBER_SAVE_LOC,'r') as f: # unpack saved unit numbers for the image
-
-                unit_numbers = []
-                for line in f:
-                    line = line.split(";")
-                    unit_numbers.extend(line)
-
-                unit_numbers = ','.join(unit_numbers)
-
-            populated_template = direction_template.format(unit_numbers)
-
-            print("Unit Numbers: ", unit_numbers)
-
-            api_key = os.environ.get("OPENAI_API_KEY")
-
-            response = get_direction(full_initial_image_path, populated_template, api_key)
-            response = response.json()['choices'][0]['message']['content']
-
-            print("########\n")
-            print(response)
-            print("########\n")
-
-            unit_number_direction = response.split(",")
-            unit_number_direction = list(map(lambda x: x.split(':'), unit_number_direction))
-
-            unit_name = []
-            unit_direction = []
-            image_name = []
-
-            for unit, direction in unit_number_direction:
-
-                unit_name.append(unit)
-                unit_direction.append(direction)
-                image_name.append(initial_image_path)
-
-            matrix = np.array([unit_name, unit_direction, image_name])
-            new_df = pd.DataFrame(matrix.transpose(), columns=['Unit Number', 'Direction', 'Image Name'])
-
-            print(new_df)
-
-            existing_df = pd.read_excel(SAVE_LOC, sheet_name=DIRECTION_SHEET)
-
-            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-
-            with pd.ExcelWriter(SAVE_LOC, mode='a', engine='openpyxl', if_sheet_exists='overlay') as writer:
-                combined_df.to_excel(writer, index=False, sheet_name=DIRECTION_SHEET)
-
-        except FileNotFoundError as e:
-            print(e)
-            print("Unit numbers were not saved")
-            print("Wrong Path to a file occured")
-
-        except KeyError as e:
-            print(e)
-            print("Unit numbers were not saved")
-            print("GPT response is not correct")
-
-        finally:
-            with open(UNIT_NUMBER_SAVE_LOC,'w') as f:
-                f.write(' ')
-
-            delete_files_in_directory("tmp_rects")
-            delete_files_in_directory("coords")
-            delete_files_in_directory("test")
+        delete_files_in_directory("tmp_rects")
+        delete_files_in_directory("coords")
+        delete_files_in_directory("test")
 
 
 create_folder_if_not_exists('coords')
