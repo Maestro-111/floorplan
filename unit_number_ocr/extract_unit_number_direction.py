@@ -358,7 +358,7 @@ def main():
 
         paths = list(zip(coords_rect,images_rect))
 
-        filtered_coords = []
+        key_plates = []
 
         for coord,path in paths:
 
@@ -387,10 +387,7 @@ def main():
                     line = line[0]
                     line = line.split(',')
                     line = list(map(int,line))
-                    filtered_coords.append(line+[prediction])
-
-
-        key_plates = sorted(filtered_coords,key=lambda x : x[4], reverse=False)[::]
+                    key_plates.append(line+[prediction])
 
         contour_image = image_original.copy()
         count = 0
@@ -400,6 +397,7 @@ def main():
         # copy key plates to test folder
 
         for x, y, w, h,p in key_plates:
+
             cv2.rectangle(contour_image, (x, y), (x + w, y + h), (0, 255, 0), 3)
             plate = image_original[y:y+h,x:x+w]
 
