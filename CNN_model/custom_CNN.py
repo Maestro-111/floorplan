@@ -184,6 +184,77 @@ class CNN(neural_net_mixin):
         self.input_shape = input_shape
 
 
+
+
+    def simple_cnn_tuner(self,hp,save_model=False):
+
+        img_input = layers.Input(shape=self.input_shape)
+
+        x = layers.Rescaling(1.0 / 255)(img_input)
+
+        # Block 1
+        x = Conv2D(
+            hp.Int('filters_1', min_value=8, max_value=32, step=8),
+            (3, 3),
+            padding='same',
+            name='block1_conv1'
+        )(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool1')(x)
+        x = Dropout(hp.Float('dropout_1', min_value=0.1, max_value=0.7, step=0.1))(x)
+
+        x = Conv2D(
+            hp.Int('filters_2', min_value=8, max_value=32, step=8),
+            (3, 3),
+            padding='same',
+            name='block1_conv2'
+        )(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool2')(x)
+        x = Dropout(hp.Float('dropout_2', min_value=0.1, max_value=0.7, step=0.1))(x)
+
+        # regular
+
+        x = Flatten(name='flatten')(x)
+
+        x = Dense(
+            units=hp.Int('units_fc1', min_value=8, max_value=64, step=8),
+            name='fc1'
+        )(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        x = Dropout(hp.Float('dropout_fc1', min_value=0.1, max_value=0.7, step=0.1))(x)
+
+        x = Dense(
+            units=hp.Int('units_fc2', min_value=8, max_value=64, step=8),
+            name='fc2'
+        )(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        x = Dropout(hp.Float('dropout_fc2', min_value=0.1, max_value=0.7, step=0.1))(x)
+
+
+        x = Dense(1, activation='sigmoid', name='predictions')(x)
+        model = models.Model(img_input, x, name='custom_model')
+
+        loss_func = tf.losses.BinaryCrossentropy()
+
+        learning_rate = hp.Choice('learning_rate', values=[0.001, 0.01, 0.1])  # Define your choices
+
+        model.compile(
+            optimizer=SGD(learning_rate=learning_rate),
+            loss=loss_func,
+            metrics=['accuracy']
+        )
+
+        if save_model:
+            self.model = model
+
+        return model
+
+
     def cnn_tuner(self,hp,save_model=False):
 
         img_input = layers.Input(shape=self.input_shape)
@@ -294,10 +365,10 @@ class CNN(neural_net_mixin):
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
         x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool1')(x)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.4)(x)
 
         x = Conv2D(
-            16,
+            8,
             (3, 3),
             padding='same',
             name='block1_conv2'
@@ -306,11 +377,11 @@ class CNN(neural_net_mixin):
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
         x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool2')(x)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.3)(x)
 
 
         x = Conv2D(
-            24,
+            8,
             (2, 2),
             padding='same',
             name='block1_conv3'
@@ -326,8 +397,7 @@ class CNN(neural_net_mixin):
         x = Flatten(name='flatten')(x)
 
         x = Dense(
-            units=8,
-            #kernel_regularizer=regularizers.l2(0.005),
+            units=16,
             name='fc1'
         )(x)
         x = BatchNormalization()(x)
@@ -335,22 +405,20 @@ class CNN(neural_net_mixin):
         x = Dropout(0.2)(x)
 
         x = Dense(
-            units=56,
-            #kernel_regularizer=regularizers.l2(0.005),
+            units=40,
             name='fc2'
         )(x)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
-        x = Dropout(0.3)(x)
+        x = Dropout(0.2)(x)
 
         x = Dense(
-            units=8,
-            #kernel_regularizer=regularizers.l2(0.005),
+            units=32,
             name='fc3'
         )(x)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
-        x = Dropout(0.1)(x)
+        x = Dropout(0.6)(x)
 
 
         x = Dense(1, activation='sigmoid', name='predictions')(x)
@@ -360,7 +428,7 @@ class CNN(neural_net_mixin):
         loss_func = tf.losses.BinaryCrossentropy()
 
         model.compile(
-            optimizer=SGD(learning_rate=0.001),
+            optimizer=SGD(learning_rate=0.01),
             loss=loss_func,
             metrics=['accuracy']
         )

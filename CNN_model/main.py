@@ -33,8 +33,8 @@ SOURCE = 'C:\metadata_craft1'
 MODEL_NAME = 'key_plates_new'
 MODEL_SUFIX = "keras"
 
-EPOCHS = 20
-GRID_EPOCHS = 15
+EPOCHS = 100
+GRID_EPOCHS = 10
 BATCH = 32
 
 dataset_loc = 'dataset'
@@ -47,8 +47,8 @@ def process_data(source:str,aug:bool,factor=6):
     sharp_and_res(data_dir = dataset_loc, factor=factor)
 
     if aug:
-        augementation(f'dataset/train/{TARGET_NAME}', 15, surveys)
-        augementation(f'dataset/validation/{TARGET_NAME}', 10, surveys)
+        augementation(f'dataset/train/{TARGET_NAME}', 3, surveys)
+        augementation(f'dataset/validation/{TARGET_NAME}', 3, surveys)
 
     print("Dataset has been created\n")
 
@@ -121,11 +121,12 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
 
     CNN_net = CNN(num_classes, DIM, TARGET_NAME)
 
+
     tuner = keras_tuner.RandomSearch(
         hypermodel=CNN_net.cnn_tuner,
         objective="val_accuracy",
-        max_trials=4,
-        executions_per_trial=3,
+        max_trials=8,
+        executions_per_trial=4,
         overwrite=True,
     )
 
@@ -153,5 +154,4 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
     best_model_for_training.save(f'C:/floorplan/{MODEL_NAME}.{MODEL_SUFIX}')
 
 
-pipeline(delete=True,process=True,aug=True,train_test=True)
-
+pipeline(delete=True, process=True, aug=True, train_test=True)

@@ -16,9 +16,9 @@ def augementation(images_dir,desired_per_image,output_dir):
 
     # Create an ImageDataGenerator for augmentation
     datagen = ImageDataGenerator(
-        rotation_range = 30,  # rotate images by 30 degrees
-        width_shift_range = 0.2,  # shift images horizontally by 30%
-        height_shift_range = 0.2,  # shift images vertically by 20%
+        rotation_range = 5,  # rotate images by 30 degrees
+        width_shift_range = 0.1,  # shift images horizontally by 30%
+        height_shift_range = 0.1,  # shift images vertically by 20%
         horizontal_flip=True,  # allow horizontal flipping
         vertical_flip=True  # allow vertical flipping
     )

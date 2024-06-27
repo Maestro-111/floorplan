@@ -25,7 +25,9 @@ import pandas as pd
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-model = keras.models.load_model(os.path.join(BASE_DIR,'keyplates_classifier.keras'))
+
+#model = keras.models.load_model(os.path.join(BASE_DIR,'keyplates_classifier.keras'))
+model = keras.models.load_model(os.path.join(BASE_DIR,'key_plates_new.keras'))
 
 class_names = ['key_plates', 'other']
 DIM = (224,224)
@@ -35,14 +37,12 @@ SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/unit_number_direction.xlsx') # wh
 UNIT_SHEET = 'Unit Number Info'
 DIRECTION_SHEET = 'Direction Info'
 
-PYTHON_PATH = os.path.join(BASE_DIR,'CRAFT/venv/Scripts/python.exe')
+PYTHON_PATH = os.path.join(BASE_DIR,'CRAFT/venv/Scripts/python.exe') # python used for CRAFT
 UNIT_NUMBER_SAVE_LOC = os.path.join(BASE_DIR,'unit_number_ocr/unit_numbers.txt')
 
 DIRECTION_SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/direction.xlsx')
 
 THRESHOLD = 0.5
-
-
 
 CRAFT_PATH = os.path.join(BASE_DIR,"CRAFT/test.py")
 CRAFT_MODEL_PATH = os.path.join(BASE_DIR,"CRAFT/craft_mlt_25k.pth")
@@ -349,12 +349,10 @@ def main():
             count_images += 1
             count_txt += 1
 
-
         IMAGE_NUM += 1
 
         images_rect = [os.path.join('tmp_rects', image) for image in os.listdir('tmp_rects')]
         coords_rect = [os.path.join('coords', coord) for coord in os.listdir('coords')]
-
 
         paths = list(zip(coords_rect,images_rect))
 
