@@ -25,7 +25,9 @@ import pandas as pd
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-model = keras.models.load_model(os.path.join(BASE_DIR,'keyplates_classifier.keras'))
+
+#model = keras.models.load_model(os.path.join(BASE_DIR,'keyplates_classifier.keras'))
+model = keras.models.load_model(os.path.join(BASE_DIR,'key_plates_new.keras'))
 
 class_names = ['key_plates', 'other']
 DIM = (224,224)
@@ -35,14 +37,12 @@ SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/unit_number_direction.xlsx') # wh
 UNIT_SHEET = 'Unit Number Info'
 DIRECTION_SHEET = 'Direction Info'
 
-PYTHON_PATH = os.path.join(BASE_DIR,'CRAFT/venv/Scripts/python.exe')
+PYTHON_PATH = os.path.join(BASE_DIR,'CRAFT/venv/Scripts/python.exe') # python used for CRAFT
 UNIT_NUMBER_SAVE_LOC = os.path.join(BASE_DIR,'unit_number_ocr/unit_numbers.txt')
 
 DIRECTION_SAVE_LOC = os.path.join(BASE_DIR,'unit_testing/direction.xlsx')
 
 THRESHOLD = 0.5
-
-
 
 CRAFT_PATH = os.path.join(BASE_DIR,"CRAFT/test.py")
 CRAFT_MODEL_PATH = os.path.join(BASE_DIR,"CRAFT/craft_mlt_25k.pth")
@@ -349,16 +349,14 @@ def main():
             count_images += 1
             count_txt += 1
 
-
         IMAGE_NUM += 1
 
         images_rect = [os.path.join('tmp_rects', image) for image in os.listdir('tmp_rects')]
         coords_rect = [os.path.join('coords', coord) for coord in os.listdir('coords')]
 
-
         paths = list(zip(coords_rect,images_rect))
 
-        filtered_coords = []
+        key_plates = []
 
         for coord,path in paths:
 
@@ -387,10 +385,7 @@ def main():
                     line = line[0]
                     line = line.split(',')
                     line = list(map(int,line))
-                    filtered_coords.append(line+[prediction])
-
-
-        key_plates = sorted(filtered_coords,key=lambda x : x[4], reverse=False)[::]
+                    key_plates.append(line+[prediction])
 
         contour_image = image_original.copy()
         count = 0
@@ -400,6 +395,7 @@ def main():
         # copy key plates to test folder
 
         for x, y, w, h,p in key_plates:
+
             cv2.rectangle(contour_image, (x, y), (x + w, y + h), (0, 255, 0), 3)
             plate = image_original[y:y+h,x:x+w]
 
@@ -414,75 +410,9 @@ def main():
         plt.imshow(contour_image)
         plt.show()
 
-        try:
-
-            with open('direction_prompt.txt', 'r') as file:
-                direction_template = file.read()
-
-            with open(UNIT_NUMBER_SAVE_LOC,'r') as f: # unpack saved unit numbers for the image
-
-                unit_numbers = []
-                for line in f:
-                    line = line.split(";")
-                    unit_numbers.extend(line)
-
-                unit_numbers = ','.join(unit_numbers)
-
-            populated_template = direction_template.format(unit_numbers)
-
-            print("Unit Numbers: ", unit_numbers)
-
-            api_key = os.environ.get("OPENAI_API_KEY")
-
-            response = get_direction(full_initial_image_path, populated_template, api_key)
-            response = response.json()['choices'][0]['message']['content']
-
-            print("########\n")
-            print(response)
-            print("########\n")
-
-            unit_number_direction = response.split(",")
-            unit_number_direction = list(map(lambda x: x.split(':'), unit_number_direction))
-
-            unit_name = []
-            unit_direction = []
-            image_name = []
-
-            for unit, direction in unit_number_direction:
-
-                unit_name.append(unit)
-                unit_direction.append(direction)
-                image_name.append(initial_image_path)
-
-            matrix = np.array([unit_name, unit_direction, image_name])
-            new_df = pd.DataFrame(matrix.transpose(), columns=['Unit Number', 'Direction', 'Image Name'])
-
-            print(new_df)
-
-            existing_df = pd.read_excel(SAVE_LOC, sheet_name=DIRECTION_SHEET)
-
-            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-
-            with pd.ExcelWriter(SAVE_LOC, mode='a', engine='openpyxl', if_sheet_exists='overlay') as writer:
-                combined_df.to_excel(writer, index=False, sheet_name=DIRECTION_SHEET)
-
-        except FileNotFoundError as e:
-            print(e)
-            print("Unit numbers were not saved")
-            print("Wrong Path to a file occured")
-
-        except KeyError as e:
-            print(e)
-            print("Unit numbers were not saved")
-            print("GPT response is not correct")
-
-        finally:
-            with open(UNIT_NUMBER_SAVE_LOC,'w') as f:
-                f.write(' ')
-
-            delete_files_in_directory("tmp_rects")
-            delete_files_in_directory("coords")
-            delete_files_in_directory("test")
+        delete_files_in_directory("tmp_rects")
+        delete_files_in_directory("coords")
+        delete_files_in_directory("test")
 
 
 create_folder_if_not_exists('coords')
