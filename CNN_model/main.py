@@ -31,7 +31,7 @@ DIM = (224,224,3)
 FACTOR = 7
 SOURCE = 'C:\metadata_craft1'
 MODEL_NAME = 'key_plates_new'
-MODEL_SUFIX = "keras"
+MODEL_SUFIX = "h5"
 
 EPOCHS = 100
 GRID_EPOCHS = 10
@@ -121,29 +121,31 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
 
     CNN_net = CNN(num_classes, DIM, TARGET_NAME)
 
-
-    tuner = keras_tuner.RandomSearch(
-        hypermodel=CNN_net.cnn_tuner,
-        objective="val_accuracy",
-        max_trials=8,
-        executions_per_trial=4,
-        overwrite=True,
-    )
-
-    print(tuner.search_space_summary())
-
-    tuner.search(train_dataset, epochs=GRID_EPOCHS, validation_data=validation_dataset)
-
-    print(tuner.results_summary())
-
-    best_hyperparameters = tuner.get_best_hyperparameters(num_trials=1)[0]
-    best_model = tuner.get_best_models(num_models=1)[0]
-
-    print("Best Hyperparameters:")
-    print(best_hyperparameters.values)
+    #
+    # tuner = keras_tuner.RandomSearch(
+    #     hypermodel=CNN_net.cnn_tuner,
+    #     objective="val_accuracy",
+    #     max_trials=8,
+    #     executions_per_trial=4,
+    #     overwrite=True,
+    # )
+    #
+    # print(tuner.search_space_summary())
+    #
+    # tuner.search(train_dataset, epochs=GRID_EPOCHS, validation_data=validation_dataset)
+    #
+    # print(tuner.results_summary())
+    #
+    # best_hyperparameters = tuner.get_best_hyperparameters(num_trials=1)[0]
+    # best_model = tuner.get_best_models(num_models=1)[0]
+    #
+    # print("Best Hyperparameters:")
+    # print(best_hyperparameters.values)
 
     best_model_for_training = CNN(num_classes, DIM, TARGET_NAME)
-    best_model_for_training.cnn_tuner(best_hyperparameters,save_model=True)
+    best_model_for_training.reserve_model()
+
+    #best_model_for_training.cnn_tuner(best_hyperparameters,save_model=True)
 
     history = best_model_for_training.train(train_dataset,validation_dataset,batch_size=BATCH,epochs=EPOCHS)
 
@@ -154,4 +156,4 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
     best_model_for_training.save(f'C:/floorplan/{MODEL_NAME}.{MODEL_SUFIX}')
 
 
-pipeline(delete=True, process=True, aug=True, train_test=True)
+pipeline(delete=False, process=False, aug=False, train_test=True)

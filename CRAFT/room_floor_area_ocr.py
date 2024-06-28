@@ -250,7 +250,7 @@ def run(img_txt,location):
 
         reader = easyocr.Reader(['en'])
 
-        for roi in ROI: # for eeach box
+        for roi in ROI: # for each box
 
             try:
                 result = reader.readtext(roi)

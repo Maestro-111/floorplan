@@ -56,7 +56,7 @@ def create_folder_if_not_exists(folder_path):
 
 
 
-def create_metedata_folders():
+def create_metedata_folders(result_folder, test_folder):
 
 
     """
@@ -69,14 +69,14 @@ def create_metedata_folders():
 
     """
 
-    res_dir = 'result'
+    res_dir = result_folder
     copy_dir = 'test_boxes_from_craft/coords'
 
     for file in os.listdir(res_dir):
         if '.txt' in file:
             shutil.copy(os.path.join(res_dir, file), copy_dir)
 
-    img_dir = 'test'
+    img_dir = test_folder
     copy_dir = 'test_boxes_from_craft/imgs'
 
     for file in os.listdir(img_dir):
@@ -102,7 +102,6 @@ def create_metedata_folders():
 def create_folders():
     create_folder_if_not_exists("test_boxes_from_craft/coords")
     create_folder_if_not_exists("test_boxes_from_craft/imgs")
-    create_folder_if_not_exists("result")
     create_folder_if_not_exists("contours")
 
 
@@ -259,11 +258,10 @@ if __name__ == '__main__':
     #############
 
     create_folders()
-    img_txt = create_metedata_folders() # zipped colleection of data, coords and imgs
+    img_txt = create_metedata_folders(result_folder, args.test_folder) # zipped colleection of data, coords and imgs
 
     if args.key_plates:
         analyze_plates(img_txt, args.unit_testing_save_path, args.unit_number_save_loc)
-
 
     if args.area_floor_rooms:
         run(img_txt,args.area_floor_rooms_save_path)

@@ -402,10 +402,16 @@ def main():
             path = f'{count}_{initial_image_path}'
             path = os.path.join(test_folder,path)
 
+            print("!!!!!!!!")
+            print(path)
+            print("!!!!!!!!")
+
             cv2.imwrite(path, plate)
             count+= 1
 
         run_craft()
+
+        a = input("Stop here, Enter: ")
 
         plt.imshow(contour_image)
         plt.show()
