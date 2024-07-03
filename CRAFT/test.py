@@ -103,8 +103,7 @@ def create_folders():
     create_folder_if_not_exists("test_boxes_from_craft/coords")
     create_folder_if_not_exists("test_boxes_from_craft/imgs")
     create_folder_if_not_exists("contours")
-
-
+    create_folder_if_not_exists("tmp_res_roi")
 
 
 def copyStateDict(state_dict):
@@ -269,5 +268,6 @@ if __name__ == '__main__':
     delete_files_in_directory('result')
     delete_files_in_directory('test_boxes_from_craft/coords')
     delete_files_in_directory('test_boxes_from_craft/imgs')
+    delete_files_in_directory('tmp_res_roi')
 
     print("elapsed time : {}s".format(time.time() - t))
