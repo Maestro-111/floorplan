@@ -3,7 +3,7 @@ from PIL import Image, ImageEnhance, ImageFilter
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+import re
 from collections import defaultdict
 
 
@@ -50,12 +50,17 @@ def analyze_plates(img_txt,unit_testing_save,unit_number_save):
     numbers = defaultdict(list)
     image_name = ''
 
-
     for txt_path,image_path in img_txt: # all represent the same image perhaps different key plate
 
-        name = image_path.split('\\')[-1][:-4]
-        name = name[2:]
+        name_pattern = re.search(r'(pdf_floor_plan_\d+_\d+)', image_path)
 
+        if not name_pattern:
+            print("did not find name")
+            raise ValueError
+
+        name = name_pattern.group(1)
+
+        print("Image Name: ", name)
         image_name = name
 
         img = Image.open(image_path)
@@ -89,12 +94,9 @@ def analyze_plates(img_txt,unit_testing_save,unit_number_save):
     names = [image_name]
 
     matrix = np.array([names, unit_nums_for_image])
-
-
     new_df = pd.DataFrame(matrix.transpose(), columns=['Name', 'Unit Number'])
 
     print(new_df)
-
 
     existing_df = pd.read_excel(unit_testing_save)
 

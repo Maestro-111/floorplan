@@ -31,7 +31,7 @@ DIM = (224,224,3)
 FACTOR = 7
 SOURCE = 'C:\metadata_craft1'
 MODEL_NAME = 'key_plates_new'
-MODEL_SUFIX = "keras"
+MODEL_SUFIX = "h5"
 
 EPOCHS = 100
 GRID_EPOCHS = 10
@@ -154,4 +154,4 @@ def train_test_model_and_save(train_dataset, validation_dataset, test_dataset,cl
     best_model_for_training.save(f'C:/floorplan/{MODEL_NAME}.{MODEL_SUFIX}')
 
 
-pipeline(delete=True, process=True, aug=True, train_test=True)
+pipeline(delete=True, process=False, aug=False, train_test=False)

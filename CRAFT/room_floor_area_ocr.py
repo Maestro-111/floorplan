@@ -13,6 +13,11 @@ import random
 import re
 import easyocr
 
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 PROB = 0.15
 
 
@@ -197,14 +202,13 @@ def visualize_cnts(copy,merged_rectangles):
 
 
 def merge_existing_boxes(path,points,mark):
-    img = cv2.imread(path)
 
+    img = cv2.imread(path)
     copy = img.copy()
 
 
     merged_rectangles = merge_intersecting_rectangles(points, 7) # lst of points, 7 iters
     merged_rectangles = convert_to_cnt(merged_rectangles) # convert to cv2 cnts
-
 
 
     merged_rectangles = merge_close_contours(merged_rectangles,30) # merge 2 times with proximuty = 30 and 10
@@ -240,17 +244,22 @@ def run(img_txt,location):
     data_names = []
     ocr_resp = []
 
+
     for txt_path,image_path in img_txt:
+
         points = read_coords(txt_path)
 
         ROI = merge_existing_boxes(image_path,points,mark) # collection of rois for each image
+
+        tmp_res_roi = 'tmp_res_roi'
 
         area_cand = []
         all_sent = []
 
         reader = easyocr.Reader(['en'])
 
-        for roi in ROI: # for eeach box
+        roi_count = 0
+        for roi in ROI: # for each box
 
             try:
                 result = reader.readtext(roi)
@@ -267,6 +276,14 @@ def run(img_txt,location):
 
             sentence = ' '.join(sentence)
             all_sent.append(sentence)
+
+            name_pattern = re.search(r'(pdf_floor_plan_\d+_\d+)', image_path)
+            image_name = str(roi_count) + ' ' + name_pattern.group(1) + '.jpg'
+
+            pp = os.path.join(tmp_res_roi,image_name)
+
+            cv2.imwrite(pp, roi)
+            roi_count += 1
 
         strings = " ; ".join(area_cand)
         all_sent = ' ; '.join(all_sent)

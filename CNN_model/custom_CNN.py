@@ -348,7 +348,6 @@ class CNN(neural_net_mixin):
         x = Activation('relu')(x)
         x = Dropout(0.6)(x)
 
-
         x = Dense(1, activation='sigmoid', name='predictions')(x)
 
         model = models.Model(img_input, x, name='custom_model')
