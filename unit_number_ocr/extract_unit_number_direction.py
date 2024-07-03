@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 import os
-
+import re
 from PIL import Image
 from PIL import ImageEnhance
 
@@ -73,6 +73,27 @@ def clear_sheet(excel_file, sheet_name):
 
     # Save the changes
     wb.save(excel_file)
+
+
+
+def sort_coords_num(st):
+
+    m = re.search(r'(rect_coordinates_\d+)', st)
+    if not m:
+        raise ValueError
+
+    num = re.findall(r'\d+', m.group(1))
+    return num[0]
+
+
+def sort_images_num(st):
+
+    m = re.search(r'(tmp_rect_\d+_\d+_\d+)', st)
+    if not m:
+        raise ValueError
+
+    num = re.findall(r'\d+', m.group(1))
+    return num[-1]
 
 
 
@@ -354,7 +375,12 @@ def main():
         images_rect = [os.path.join('tmp_rects', image) for image in os.listdir('tmp_rects')]
         coords_rect = [os.path.join('coords', coord) for coord in os.listdir('coords')]
 
+        images_rect = sorted(images_rect, key=sort_images_num) # sort image and coords
+        coords_rect = sorted(coords_rect, key=sort_coords_num)
+
         paths = list(zip(coords_rect,images_rect))
+
+        print(paths)
 
         key_plates = []
 
@@ -384,6 +410,9 @@ def main():
                     line = txt_file.readlines()
                     line = line[0]
                     line = line.split(',')
+                    print('????')
+                    print(line)
+                    print('????')
                     line = list(map(int,line))
                     key_plates.append(line+[prediction])
 
@@ -402,10 +431,16 @@ def main():
             path = f'{count}_{initial_image_path}'
             path = os.path.join(test_folder,path)
 
+            print("!!!!!!!!")
+            print(path)
+            print("!!!!!!!!")
+
             cv2.imwrite(path, plate)
             count+= 1
 
         run_craft()
+
+        a = input("Stop here, Enter: ")
 
         plt.imshow(contour_image)
         plt.show()
